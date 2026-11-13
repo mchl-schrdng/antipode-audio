@@ -1,0 +1,10 @@
+{
+  "name": "antipode",
+  "version": "0.1.0",
+  "description": "Original sound design for coding agents. Local synthesis, layered stereo compositions and WAV processing.",
+  "author": { "name": "Antipode contributors" },
+  "homepage": "https://antipode.quest",
+  "repository": "https://github.com/mchl-schrdng/antipode-audio",
+  "license": "Apache-2.0",
+  "mcpServers": "./integrations/claude.mcp.json"
+}

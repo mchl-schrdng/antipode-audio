@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "antipode": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--project", "${CLAUDE_PLUGIN_ROOT}", "--locked", "--offline", "--no-dev", "--no-env-file", "antipode-mcp", "--workspace", "~/.antipode/audio"],
+      "env": { "UV_PROJECT_ENVIRONMENT": "${CLAUDE_PLUGIN_DATA}/venv" }
+    }
+  }
+}

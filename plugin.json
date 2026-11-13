@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "antipode",
+  "version": "0.1.0",
+  "description": "Original sound design for coding agents. Local synthesis, layered stereo compositions and WAV processing.",
+  "author": { "name": "Antipode contributors" },
+  "homepage": "https://antipode.quest",
+  "repository": "https://github.com/mchl-schrdng/antipode-audio",
+  "license": "Apache-2.0",
+  "keywords": ["audio", "sound-design", "mcp", "local-first"],
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Antipode",
+        "shortDescription": "Turn an idea into original sound, locally."
+      }
+    }
+  }
+}
