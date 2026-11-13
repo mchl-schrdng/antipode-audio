@@ -1,10 +1,14 @@
 # Claude directory submission dossier
 
-**Submitted for review on 2026-11-13:** Antipode 0.1.2, from
-[commit ad2a6a3](https://github.com/mchl-schrdng/antipode-audio/commit/ad2a6a37d46352fe7e26b3aa25da0c582c621bf6),
-for **Claude Code only**. The portal confirms submission and shows the security
-scan in progress. Human review has not started; approval and public listing
-remain pending. Automatic publication is disabled.
+**Needs changes — refused on 2026-11-13:** the directory's automated checks
+refused Antipode 0.1.2 at commit `cba7f25`. The portal reports restrictions on
+local MCP, executable content and bundled file types for this publisher; see
+[Review status](#review-status). There is no approval or public listing.
+Automatic publication is disabled.
+
+The original submission was made on the same date from
+[commit ad2a6a3](https://github.com/mchl-schrdng/antipode-audio/commit/ad2a6a37d46352fe7e26b3aa25da0c582c621bf6)
+for **Claude Code only**.
 
 ## Route and source
 
@@ -66,8 +70,8 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
   transparently for Anthropic to assess; it is not a claimed policy clearance.
 - Earlier portal validation at `ad98569` passed with zero blocking findings,
   eight warnings and four policy holds for human review of pinned dependencies,
-  bundled WAV demos, Python code and local MCP execution. These remain review
-  items; submission does not establish approval. Claude's
+  bundled WAV demos, Python code and local MCP execution. The subsequent
+  automated refusal supersedes that pre-submission result. Claude's
   [pre-submission checklist](https://claude.com/docs/plugins/pre-submission-checklist)
   flags these execution/file categories for reviewer inspection. Local strict
   validation is not proof of directory acceptance. Keep the source and downloads
@@ -86,9 +90,29 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
 
 ## Review status
 
-Submission is confirmed and the security scan is in progress. Await its result
-and any subsequent human-review requests. No approval or public listing is
-recorded. Automatic publication remains disabled.
+The portal's refusal for `cba7f25` requires a Verified organization to distribute
+local MCP and flags programs/scripts and file types outside Markdown, text,
+JSON, YAML, PNG, JPEG, GIF, WebP and ICO. These are directory eligibility findings,
+not a failed audio or MCP connection test. The submitted package includes its
+Python runtime, WAV examples and SVG artwork openly; none has been hidden,
+renamed or moved to a download-and-run instruction to bypass review.
+
+Anthropic's [status guide](https://claude.com/docs/directory/submission-status#contact-anthropic-about-a-submission)
+documents **Appeal this decision** for an unapproved plugin, plus **Get help**
+or **Contact Anthropic**. For this refusal, the observed menu offered **Contact
+Anthropic**; no separate appeal button was visible. The next proposed step is to ask Anthropic how this
+publisher can qualify for organization verification and whether the disclosed
+local runtime can receive manual review. No appeal or resubmission is recorded.
+The public [submission eligibility guide](https://claude.com/docs/directory/publish)
+explains paid-plan access but does not document an application process for this
+organization restriction. The separate
+[Verified connector label](https://claude.com/docs/connectors/verification)
+does not establish publisher eligibility for local MCP.
+
+The full plugin remains available through the repository's own marketplace and
+release downloads, an independent route described in Claude's
+[publishing guide](https://code.claude.com/docs/en/plugins/publish). No runtime
+components have been removed. Automatic directory publication remains disabled.
 
 The v0.1.2 release files remain fixed to their release commit. This status update
 on `main` does not replace those published assets.
