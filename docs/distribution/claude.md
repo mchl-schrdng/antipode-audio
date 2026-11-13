@@ -1,8 +1,11 @@
 # Claude directory submission dossier
 
-Updated 2026-11-13 for Antipode 0.1.1. Directory submission is pending an eligible
-publisher session. No submission confirmation, approval or public listing is
-recorded.
+Updated 2026-11-13 for Antipode 0.1.2. Portal validation passed at
+[commit ad98569](https://github.com/mchl-schrdng/antipode-audio/commit/ad985696c5878a0a0830bbcd12c5b03a903ad2f4):
+**zero blocking findings, eight warnings and four policy holds**. The GitHub
+connection and publisher checks passed. Legal acknowledgements and the final
+submission remain pending. No submission confirmation, approval or public listing
+is recorded.
 
 ## Route and source
 
@@ -18,9 +21,9 @@ still has a separate publication step. See the official
 | --- | --- |
 | Repository | `https://github.com/mchl-schrdng/antipode-audio` |
 | Plugin path | Empty: `.claude-plugin/plugin.json` is at the repository root |
-| Branch or tag | Published release tag [v0.1.1](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.1) |
+| Branch or tag | Release tag [v0.1.2](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.2); revalidate the final revision before submission |
 | Name / display name | `antipode` / Antipode |
-| Version | `0.1.1` |
+| Version | `0.1.2` |
 | Listing, links and examples | [Shared distribution kit](README.md) and repository README |
 | Icon | Bundled square SVG, declared in the Claude manifest |
 
@@ -45,8 +48,11 @@ checks the plugin manifest.
 In the new Claude Code session, use `/antipode:antipode`, check the MCP connection,
 and run the three prompts in the [shared review procedure](README.md#reviewer-walkthrough).
 The `.claude-plugin/plugin.json` manifest names `integrations/claude.mcp.json`;
-the process uses `${CLAUDE_PLUGIN_ROOT}` and stores its environment under
-`${CLAUDE_PLUGIN_DATA}`. First startup can download Python and dependencies.
+the process runs `uv run --locked ${CLAUDE_PLUGIN_ROOT}/scripts/claude_mcp.py`.
+The bundled PEP 723 script declares Python 3.12 and its dependencies; the adjacent
+lockfile fixes their versions. uv stores the isolated environment in its cache,
+outside the installed plugin. The launcher disables bytecode writes and declares
+no server environment overrides. First startup can download Python and dependencies.
 This package targets local Claude Code execution. Do not advertise working audio
 tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
 
@@ -57,8 +63,10 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
   [directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
   excludes certain AI audio-model software. This distinction should be presented
   transparently for Anthropic to assess; it is not a claimed policy clearance.
-- Expect human review of the pinned `uv run --locked` launcher, Python code and
-  bundled WAV demos. Claude's [pre-submission checklist](https://claude.com/docs/plugins/pre-submission-checklist)
+- The portal recorded four policy holds for human review of pinned dependencies,
+  bundled WAV demos, Python code and local MCP execution. These remain review
+  items even though there are no blocking validation findings. Claude's
+  [pre-submission checklist](https://claude.com/docs/plugins/pre-submission-checklist)
   flags these execution/file categories for reviewer inspection. Local strict
   validation is not proof of directory acceptance. Keep the source and downloads
   disclosed instead of hiding these components.
@@ -76,9 +84,10 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
 
 ## Remaining portal work
 
-Continue in an eligible publisher session, connect the authorized GitHub account,
-confirm the submission contact and published revision, run portal validation,
-review any findings, and complete accurate data/audience answers.
+Revalidate the final v0.1.2 revision after the approved brand assets and release
+metadata are included. Review the remaining findings and confirm the completed
+contact, data-handling and audience answers. The publisher must then confirm the
+legal acknowledgements and send the submission.
 Review the [directory terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms)
 and policy before accepting the portal acknowledgements. No terms acceptance,
 submission identifier, approval or listing URL is recorded by this dossier.

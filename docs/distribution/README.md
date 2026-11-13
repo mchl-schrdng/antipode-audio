@@ -1,10 +1,12 @@
 # Distribution kit
 
-Antipode [v0.1.1 is published](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.1).
+Current release package: [Antipode v0.1.2](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.2).
 This directory records listing copy, reproducible bundles and a review procedure.
 As of 2026-11-13, Google's [Antigravity interest form](antigravity.md) submission
-is confirmed; [Claude directory submission](claude.md) is pending an eligible
-publisher session. Neither status establishes marketplace approval.
+is confirmed for the historical v0.1.1 package. [Claude portal validation](claude.md)
+passed at commit `ad98569` with zero blocking findings, eight warnings and four
+policy holds. Legal acknowledgements and final submission remain pending; no
+Claude submission or marketplace approval is recorded.
 
 ## Public details
 
@@ -88,8 +90,9 @@ model.
 
 ## Reproducible plugin archives
 
-The published v0.1.1 assets are fixed to that release. Build from its Git tag to
-reproduce them; later documentation updates on `main` do not change those assets.
+Release assets are fixed to their Git tag. Build from `v0.1.2` to reproduce the
+current package; later documentation updates on `main` do not change those assets.
+The historical Google submission continues to reference its original v0.1.1 package.
 
 Use Python 3.11+ from a reviewed source checkout. The builder requires every
 allowlisted file to be tracked in Git, including newly staged files. It reads
@@ -102,8 +105,8 @@ python3 scripts/build_plugin.py
 python3 scripts/build_plugin.py --client antigravity
 ```
 
-Outputs are `dist/antipode-portable-0.1.1.zip` and
-`dist/antipode-antigravity-0.1.1.zip`, each with a `.zip.sha256` sidecar. Both contain
+Outputs are `dist/antipode-portable-0.1.2.zip` and
+`dist/antipode-antigravity-0.1.2.zip`, each with a `.zip.sha256` sidecar. Both contain
 readable engine source, locked dependencies' metadata, manifests, skills,
 artwork, licenses, documentation, recipes and demo WAVs. Dependencies themselves
 are downloaded at setup. The explicit file list excludes Git internals, virtual
@@ -112,8 +115,8 @@ source, even if an unrelated file is tracked.
 
 Entries have a stable order, timestamp and permissions. ZIP entries are stored
 without compression so identical source bytes produce identical ZIP bytes across
-compression-library versions. Scripts have mode 0755. The Google variant replaces
-root `plugin.json` with `integrations/antigravity.plugin.json` and omits `mcp.json`;
+compression-library versions. Python scripts have mode 0755; lockfiles have mode
+0644. The Google variant replaces root `plugin.json` with `integrations/antigravity.plugin.json` and omits `mcp.json`;
 its native server declaration is `mcp_config.json`. Other payload files are the
 same. SHA-256 identifies the bytes; it is not a signature or a vendor endorsement.
 
@@ -121,8 +124,8 @@ Verify a download before extracting it:
 
 ```sh
 cd dist
-shasum -a 256 -c antipode-portable-0.1.1.zip.sha256
-shasum -a 256 -c antipode-antigravity-0.1.1.zip.sha256
+shasum -a 256 -c antipode-portable-0.1.2.zip.sha256
+shasum -a 256 -c antipode-antigravity-0.1.2.zip.sha256
 ```
 
 ## Reviewer walkthrough

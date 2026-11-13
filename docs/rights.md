@@ -9,9 +9,12 @@ non-infringement in every jurisdiction.
 Antipode synthesizes waveforms and seeded noise using mathematical DSP. The
 repository contains no sample pack, recording scraped from the internet, model
 weights, training dataset, voice clone, or artist-specific model. The bundled
-sound studies are rendered from the included JSON recipes. The logo and site
-graphics are original editable vectors/code; no stock imagery or downloaded font
-is required. Code and creative decisions were developed with AI coding assistance.
+sound studies are rendered from the included JSON recipes. The orbital logo was
+supplied by the project owner as an editable SVG; the bundled mark, icon and cover
+adapt its first animation frame. The site graphics remain editable vectors/code,
+and no downloaded font is required. Code and creative decisions were developed
+with AI coding assistance. This provenance record does not establish trademark
+clearance.
 
 The host agent interprets the user's brief and chooses parameters. Antipode itself
 does not call a generative audio service. This removes sample/model licensing

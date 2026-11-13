@@ -46,7 +46,7 @@ Start a new Codex session and use the Antipode skill. `plugin.json` and `mcp.jso
 
 ## Antigravity
 
-Download `antipode-antigravity-0.1.1.zip` from [GitHub Releases](https://github.com/mchl-schrdng/antipode-audio/releases). Extract it into a new `antipode` folder, then:
+Download [antipode-antigravity-0.1.2.zip](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.2/antipode-antigravity-0.1.2.zip) from GitHub Releases. Extract it into a new `antipode` folder, then:
 
 ```sh
 agy plugin install ./antipode
