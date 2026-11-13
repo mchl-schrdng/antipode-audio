@@ -41,6 +41,11 @@ not a certification of every agent version or every possible audio use.
 | Antigravity 1.5.8 | Strict native bundle validation passes; version 0.1.1 installed as a plugin and an authenticated agent session created a 4,800-frame, 48 kHz WAV | Only a bounded generation smoke test, not a full creative conversation |
 | OpenCode 1.19.5 | Native MCP status reports Connected; native skill discovery finds Antipode | No full creative conversation evaluated |
 
+The documented one-command public GitHub installation was also tested against
+commit `a557a8e` with a fresh Claude configuration and empty dependency cache:
+version 0.1.1 installed in 4.70 seconds and its native MCP connected from the
+installed copy in 5.96 seconds. Existing global Claude settings were unchanged.
+
 The original Antigravity check used a temporary uniquely named MCP registration.
 The 0.1.1 check exercised an actual installed plugin with a temporary output
 workspace and dependency cache; the test installation was removed afterward.
@@ -48,10 +53,11 @@ The bounded smoke session permitted only the generation tool. No authentication
 settings or existing audio files were changed. Claude checks used an isolated
 configuration; other native checks used runtime overrides.
 
-**The initial release passed all four GitHub Actions jobs** at commit `c849a0e`: Linux with Python
+**Version 0.1.1 passed all four GitHub Actions jobs** at commit `a557a8e`: Linux with Python
 3.11 and 3.12, macOS with Python 3.12, and Windows with Python 3.12. Each job ran
-the complete test suite and built both distribution formats. See the
-[successful run](https://github.com/mchl-schrdng/antipode-audio/actions/runs/43378209463)
+the 23-test suite, built the Python distributions and packaged both plugin ZIP
+formats. See the
+[successful run](https://github.com/mchl-schrdng/antipode-audio/actions/runs/43381385925)
 and [latest runs](https://github.com/mchl-schrdng/antipode-audio/actions).
 
 ## Website and sound studies
