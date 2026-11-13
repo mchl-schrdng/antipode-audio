@@ -1,7 +1,8 @@
 # Antigravity Marketplace submission dossier
 
-Updated 2026-11-13 for Antipode 0.1.1. Google's official Antigravity Plugin Interest
-Form was submitted and confirmed receipt. No Marketplace approval is recorded.
+Updated 2026-11-13 for Antipode 0.1.2. Google's official Antigravity Plugin Interest
+Form confirmed receipt of a replacement submission correcting the publisher's
+contact email. No Marketplace approval is recorded.
 
 ## Route and package
 
@@ -14,10 +15,10 @@ installation.
 | Field | Value |
 | --- | --- |
 | Product / identifier | Antipode / `antipode` |
-| Version | `0.1.1` |
+| Version | `0.1.2` |
 | Website | `https://antipode.quest` |
 | Public source | `https://github.com/mchl-schrdng/antipode-audio` |
-| Native artifact | [antipode-antigravity-0.1.1.zip](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.1/antipode-antigravity-0.1.1.zip) · [SHA-256](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.1/antipode-antigravity-0.1.1.zip.sha256) |
+| Native artifact | [antipode-antigravity-0.1.2.zip](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.2/antipode-antigravity-0.1.2.zip) · [SHA-256](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.2/antipode-antigravity-0.1.2.zip.sha256) |
 | Native manifest source | `integrations/antigravity.plugin.json` |
 | Description and suggested prompts | [Shared distribution kit](README.md) |
 | Logo | Bundled square SVG, declared in the native manifest |
@@ -72,10 +73,15 @@ the bundled licenses and [rights disclosures](../rights.md) in distribution.
 ## Submission status
 
 The official [Antigravity Plugin Interest Form](https://forms.gle/2EX5RFYPoJe1UgxR9)
-was submitted on **2026-11-13**. Its confirmation read: “Your response has been
-recorded.” The submission included the project website, support and documentation
-links, the published v0.1.1 native artifact, product scope, verification and license
-details. Publisher contact information was supplied directly in the form.
+was first submitted on **2026-11-13**, referring to the v0.1.1 native artifact.
+At the publisher's request, a replacement was submitted the same day to correct
+both email fields to the publisher's Antigravity account address and provide the
+published v0.1.2 native artifact. The description explicitly asks Google to replace
+the previous response for the same project. Contact details were supplied directly
+in the form and are kept out of this public record.
+
+Google confirmed the replacement with: “Votre réponse a bien été enregistrée.”
+This confirms receipt; Google has not confirmed that it reconciled the two responses.
 
 No receipt identifier or review timeframe was shown. Await Google's response;
 this confirms an interest-form submission, not Marketplace approval or a public
