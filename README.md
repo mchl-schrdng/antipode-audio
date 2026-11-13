@@ -8,10 +8,14 @@
 </p>
 
 <p align="center">
-  <a href="#start-listening">Listen</a> ·
+  <a href="https://antipode.quest">Listening room</a> ·
   <a href="#get-started">Install</a> ·
   <a href="docs/integrations.md">Connect your agent</a> ·
   <a href="docs/rights.md">Rights & provenance</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/mchl-schrdng/antipode-audio/actions/workflows/check.yml"><img src="https://github.com/mchl-schrdng/antipode-audio/actions/workflows/check.yml/badge.svg" alt="Linux, macOS and Windows checks"></a>
 </p>
 
 ---
@@ -41,7 +45,7 @@ recipe; no recording was sampled.
 | **Glass Orbit** | [Listen / download WAV](examples/audio/glass-orbit.wav) | [Rebuild it](examples/recipes/glass-orbit.json) |
 | **Afterimage** | [Listen / download WAV](examples/audio/afterimage.wav) | [Rebuild it](examples/recipes/afterimage.json) |
 
-The listening room is designed for [antipode.quest](https://antipode.quest).
+Visit the live listening room at [antipode.quest](https://antipode.quest).
 Its deployment source is maintained separately from this public instrument repository.
 
 ## Get started

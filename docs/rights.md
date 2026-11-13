@@ -65,9 +65,10 @@ services (including software, audio tools and associated services). The
 and [WIPO availability guidance](https://www.wipo.int/en/web/madrid-system/check-availability)
 explain why an identical-name lookup alone is insufficient.
 
-RDAP reported `antipode.quest` as registered on the review date. That does not prove
-who controls it or grant trademark rights. DNS ownership and deployment must be
-verified separately. No domain purchase or trademark filing is part of this release.
+The project owner's Vercel account controls `antipode.quest`. The domain was
+connected to the production listening room and verified over HTTPS on the review
+date. Domain control does not grant trademark rights. No domain purchase or
+trademark filing is part of this release.
 
 ## Reproducibility and dependency review
 

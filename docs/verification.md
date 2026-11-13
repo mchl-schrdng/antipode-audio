@@ -37,12 +37,17 @@ removed it afterward, restoring the original configuration. The smoke session
 allowed only the test server's generation tool. No authentication settings were changed. Other native
 checks used isolated configuration or runtime overrides.
 
-The repository's CI matrix targets Linux, macOS and Windows. Local checks alone
-do not establish those CI results; consult the actual [Actions runs](https://github.com/mchl-schrdng/antipode-audio/actions).
+**All four GitHub Actions jobs passed** at commit `c849a0e`: Linux with Python
+3.11 and 3.12, macOS with Python 3.12, and Windows with Python 3.12. Each job ran
+the complete test suite and built both distribution formats. See the
+[successful run](https://github.com/mchl-schrdng/antipode-audio/actions/runs/43378209463)
+and [latest runs](https://github.com/mchl-schrdng/antipode-audio/actions).
 
 ## Website and sound studies
 
 - Desktop layout checked at 1440 × 900; mobile at 390 × 844 without page overflow.
+  The live custom domain was checked again on desktop and mobile after deployment,
+  including the animated wire-ring logo, all three recordings and install controls.
 - Real WAV playback, exclusive track switching and copy-install controls verified
   in a browser. No console errors observed during those checks.
 - JavaScript syntax, local asset links and audio formats checked. The site has
@@ -56,7 +61,9 @@ do not establish those CI results; consult the actual [Actions runs](https://git
 
 ## Open release decisions
 
-`antipode.quest` is an intended domain, not a verified DNS attachment in this
-repository. The name/logo have not received trademark clearance. The documented
+The listening room is live at [antipode.quest](https://antipode.quest), deployed
+from a separate private frontend repository on Vercel. Its domain configuration
+and HTTPS page were verified on the review date. The name/logo have not received
+trademark clearance. The documented
 [rights review](rights.md) records nearby existing audio names and the limits of
 the licensing statements. No PyPI or public plugin-directory publication is claimed.
