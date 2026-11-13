@@ -72,7 +72,8 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
                 args[-1] = str(Path(directory) / "audio")
                 env = {key: substitute(value) for key, value in spec.get("env", {}).items()}
                 if filename == "integrations/claude.mcp.json":
-                    self.assertEqual(args[:3], ["run", "--locked", str(ROOT / "scripts/claude_mcp.py")])
+                    self.assertEqual(args[:2], ["run", "--locked"])
+                    self.assertEqual(Path(args[2]), ROOT / "scripts/claude_mcp.py")
                     self.assertNotIn("env", spec)
                     env["UV_PYTHON"] = "3.12"
                 else:
@@ -83,6 +84,8 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
                 env["UV_OFFLINE"] = "1"
                 # MCP filters inherited variables; reuse the cache populated by installation.
                 env["UV_CACHE_DIR"] = cache_directory
+                if "UV_PYTHON_INSTALL_DIR" in os.environ:
+                    env["UV_PYTHON_INSTALL_DIR"] = os.environ["UV_PYTHON_INSTALL_DIR"]
                 self.assertNotIn("--offline", args)
                 self.assertIn("--locked", args)
                 async with asyncio.timeout(60), Client(StdioServerParameters(command=shutil.which("uv"), args=args, env=env)) as client:
