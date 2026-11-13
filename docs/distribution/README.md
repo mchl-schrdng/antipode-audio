@@ -49,8 +49,9 @@ model.
 
 ## Access, data and limitations
 
-- **Local execution:** the host starts `uv run --locked` against the bundled
-  Python project. `uv` prepares Python and dependencies as needed, using its
+- **Local execution:** Claude starts `uv run --locked` against the bundled
+  `scripts/claude_mcp.py`, whose adjacent lockfile pins its script environment.
+  Other hosts use the bundled Python project and `uv.lock`. `uv` prepares Python and dependencies as needed, using its
   configured download sources and cache. This first-run software download is not
   an audio upload. Antipode's engine makes no network calls and has no telemetry,
   remote MCP endpoint, authentication flow or listening HTTP port.
@@ -60,8 +61,9 @@ model.
   WAVs within that workspace. Absolute paths, traversal and symlinked audio paths
   are rejected. Use a trusted local directory; this is an application boundary,
   not an operating-system sandbox against another process changing files.
-- **Other writes:** dependencies go into the host's writable plugin-data virtual
-  environment and `uv`'s cache/Python installation directories. The skill asks
+- **Other writes:** Claude dependencies and its script environment live in
+  `uv`'s cache. Other hosts use their writable plugin-data virtual environment.
+  uv may also create a managed Python installation. The skill asks
   the coding agent to save the recipe using its own file tool. That host action
   has the host's permissions, separately from the MCP audio workspace.
 - **Data handling:** Antipode may process user-selected audio that contains

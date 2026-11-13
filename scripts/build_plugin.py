@@ -52,6 +52,8 @@ FILES = (
     "pyproject.toml",
     "scripts/build_plugin.py",
     "scripts/client_config.py",
+    "scripts/claude_mcp.py",
+    "scripts/claude_mcp.py.lock",
     "skills/antipode/SKILL.md",
     "skills/antipode/references/recipes.md",
     "src/antipode/__init__.py",
@@ -96,7 +98,7 @@ def build(root: Path, output: Path, client: str = "portable") -> dict:
         for name, data in sorted(contents.items()):
             info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
             info.create_system = 3
-            mode = 0o755 if name.startswith("scripts/") else 0o644
+            mode = 0o755 if name.startswith("scripts/") and name.endswith(".py") else 0o644
             info.external_attr = (stat.S_IFREG | mode) << 16
             bundle.writestr(info, data)
     digest = hashlib.sha256(archive.read_bytes()).hexdigest()

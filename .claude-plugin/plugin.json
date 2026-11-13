@@ -1,6 +1,6 @@
 {
   "name": "antipode",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Create original sounds with your coding agent: local synthesis, layered stereo recipes, effects and WAV export. No sample library or model download.",
   "author": {
     "name": "Antipode contributors",

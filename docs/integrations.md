@@ -4,11 +4,11 @@ Antipode is one local audio engine, one MCP server and one sound-design skill. C
 
 ## Install uv once
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and make sure it is on your agent application's PATH. Antipode's first launch automatically prepares Python 3.12 and the dependencies fixed in `uv.lock`. No `uv sync` step, GPU, model download or Antipode account is required.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and make sure it is on your agent application's PATH. Antipode's first launch automatically prepares Python 3.12 and locked dependencies. No `uv sync` step, GPU, model download or Antipode account is required.
 
 The first launch needs internet access. Later launches can use the prepared runtime offline. The audio engine itself never uses the network. Your host agent may use a cloud model for conversation. If a slow first download exceeds the host's startup timeout, let the download complete where possible and reconnect the MCP server. For environments with no network at all, prepare the runtime before disconnecting.
 
-Plugin environments live in the host's writable plugin-data directory, outside the installed source. Plugin audio goes to `~/.antipode/audio` and survives plugin replacement. The server expands `~` itself. Agents can only address relative WAV paths within that workspace; existing files are never replaced. Use different output names or subdirectories for different agents.
+Claude Code uses uv's isolated script cache; the other plugin hosts use their writable plugin-data directory. Both keep environments outside the installed source. Plugin audio goes to `~/.antipode/audio` and survives plugin replacement. The server expands `~` itself. Agents can only address relative WAV paths within that workspace; existing files are never replaced. Use different output names or subdirectories for different agents.
 
 ## Claude Code
 
@@ -25,6 +25,8 @@ Or run inside Claude Code:
 ```
 
 Start a new session, then use `/antipode:antipode` or ask Claude to design a sound with Antipode. This adds the project's own marketplace and installs its plugin; it does not imply approval in Anthropic's public directory. The terminal one-step command requires Claude Code 2.1.292 or later; the in-session `/plugin` form requires 2.1.275 or later. [Official installation commands](https://code.claude.com/docs/en/plugins/cli-reference), [plugin manifest reference](https://code.claude.com/docs/en/plugins-reference).
+
+Claude launches the bundled `scripts/claude_mcp.py` with `uv run --locked`. Its PEP 723 metadata declares Python 3.12 and the same dependencies as the project; `scripts/claude_mcp.py.lock` fixes their versions. The short launcher imports the bundled engine, disables bytecode writes, and declares no server environment overrides. uv does not automatically read a working-directory `.env` file; loading one requires an explicit uv option or user environment setting. [uv script documentation](https://docs.astral.sh/uv/guides/scripts/).
 
 For an older client, add the marketplace first:
 
@@ -94,17 +96,17 @@ uv run --locked antipode --workspace ./audio render examples/recipes/event-horiz
 uv run --locked antipode --workspace ./audio analyze atmosphere.wav
 ```
 
-Once prepared, add `--offline` after `uv run` to prohibit downloads. For plugin hosts, setting `UV_OFFLINE=1` in that server's MCP environment enforces the same restriction. A new plugin version or deleted runtime may need network setup again. Recipe filenames are ordinary CLI inputs; tool audio paths remain confined to the configured workspace.
+Once prepared, add `--offline` after `uv run` to prohibit downloads. Launching your host from a terminal with `UV_OFFLINE=1` also restricts uv to its cache; the shipped Claude server configuration declares no environment overrides. A new plugin version or deleted runtime may need network setup again. Recipe filenames are ordinary CLI inputs; tool audio paths remain confined to the configured workspace.
 
 ## Verification scope
 
 | Surface | Verified |
 | --- | --- |
 | MCP protocol | Real subprocess connections with modern and legacy negotiation; all five tools, layered rendering, processing, analysis and rejected invalid calls |
-| Cold installation | Empty dependency cache and empty managed-Python directory; Python 3.12 and dependencies downloaded from a read-only source copy; real WAV generated; second startup with `UV_OFFLINE=1` and Python downloads disabled also generated a WAV, without source writes; cold MCP connection 8.87 seconds, offline reconnection 0.48 seconds on this machine |
-| Plugin launch configurations | All three shipped launch configurations start with an offline prepared cache, keep their virtual environment outside the source and write a real WAV |
+| Cold installation | Empty dependency cache and empty managed-Python directory; Python 3.12 and dependencies downloaded from a read-only source copy; real WAV generated; second startup with `UV_OFFLINE=1` and Python downloads disabled also generated a WAV, without source writes; both project and Claude script launchers tested; Claude cold connection 7.81 seconds and offline reconnection 1.20 seconds on this machine |
+| Plugin launch configurations | All three shipped launch configurations start with an offline prepared cache, keep their environment outside the source and write a real WAV |
 | Codex | Native catalog discovery and app-server connection; all five tools discovered with schemas and no discovery error |
-| Claude Code 2.1.296 | Strict manifest validation; actual 0.1.1 installation from a local marketplace snapshot in an empty test profile; native MCP health check connected in 6.35 seconds with a fresh dependency cache |
+| Claude Code 2.1.296 | Strict manifest validation; actual 0.1.2 installation from a read-only local marketplace snapshot in an empty test profile; native MCP health check connected through the bundled script in 4.86 seconds with a fresh dependency cache |
 | Antigravity 1.5.8 | Google package passed strict validation; actual 0.1.1 plugin installation discovered one skill and one MCP server; a bounded native session generated 4800 frames at 48 kHz through the installed plugin; total session 25.52 seconds with a fresh dependency cache |
 | OpenCode 1.19.5 | Native MCP connection reports **Connected**; native skill discovery finds Antipode |
 

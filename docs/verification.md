@@ -17,6 +17,13 @@ not a certification of every agent version or every possible audio use.
   rendered in 8.87 seconds. A second start forced uv offline and prohibited Python
   downloads; it rendered another WAV in 0.48 seconds without source writes. These
   are observed test timings, not installation-time guarantees.
+- Version 0.1.2 adds a standalone, locked Claude launcher without server
+  environment overrides. From a read-only source copy and empty Python/dependency
+  caches, its MCP connection completed in 7.81 seconds and rendered 4,800 frames.
+  Forced-offline reconnection completed in 1.20 seconds and rendered another WAV;
+  neither run wrote to the source. Its dependency versions match the project lock.
+  A separate check confirmed that uv ignores a working-directory `.env` by default
+  and loads it only when explicitly requested.
 - Every shipped launch configuration also rendered a WAV with offline mode forced
   and its environment outside the plugin source directory.
 - Both plugin ZIP formats use explicit tracked-file allowlists, fixed archive
@@ -37,7 +44,7 @@ not a certification of every agent version or every possible audio use.
 | Host | Observed result | Remaining limit |
 | --- | --- | --- |
 | Codex | Catalog discovery and native app-server connection expose all five tools, with schemas and no discovery error | No full creative conversation evaluated |
-| Claude Code | Strict plugin/marketplace validation passes; version 0.1.1 installed in a fresh Claude configuration and connected natively with an empty dependency cache in 6.35 seconds | No full creative conversation evaluated |
+| Claude Code | Strict plugin/marketplace validation passes; version 0.1.2 installed from a read-only snapshot into a fresh Claude configuration and its bundled script connected natively with an empty dependency cache in 4.86 seconds; source files and existing global settings unchanged | No full creative conversation evaluated |
 | Antigravity 1.5.8 | Strict native bundle validation passes; version 0.1.1 installed as a plugin and an authenticated agent session created a 4,800-frame, 48 kHz WAV | Only a bounded generation smoke test, not a full creative conversation |
 | OpenCode 1.19.5 | Native MCP status reports Connected; native skill discovery finds Antipode | No full creative conversation evaluated |
 
