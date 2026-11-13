@@ -54,6 +54,7 @@ class ConfigurationTests(unittest.TestCase):
 class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
     @unittest.skipUnless(shutil.which("uv"), "uv is required to verify plugin launch commands")
     async def test_all_plugin_manifests_launch_offline_outside_the_plugin_root(self):
+        cache_directory = subprocess.check_output([shutil.which("uv"), "cache", "dir"], text=True).strip()
         for filename in ("mcp.json", "integrations/claude.mcp.json", "mcp_config.json"):
             with self.subTest(manifest=filename), tempfile.TemporaryDirectory() as directory:
                 spec = json.loads((ROOT / filename).read_text())["mcpServers"]["antipode"]
@@ -68,6 +69,8 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
                 args[-1] = str(Path(directory) / "audio")
                 env = {key: substitute(value) for key, value in spec["env"].items()}
                 env["UV_PYTHON"] = sys.executable
+                # MCP filters inherited variables; reuse the cache populated by installation.
+                env["UV_CACHE_DIR"] = cache_directory
                 self.assertIn("--offline", args)
                 self.assertIn("--locked", args)
                 self.assertTrue(Path(env["UV_PROJECT_ENVIRONMENT"]).is_relative_to(directory))
