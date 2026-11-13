@@ -1,7 +1,7 @@
 # Antigravity Marketplace submission dossier
 
-Prepared 2026-11-13 for Antipode 0.1.1. This is a ready-to-review package and listing
-draft, not a claim of Marketplace acceptance or publication.
+Updated 2026-11-13 for Antipode 0.1.1. Google's official Antigravity Plugin Interest
+Form was submitted and confirmed receipt. No Marketplace approval is recorded.
 
 ## Route and package
 
@@ -11,17 +11,16 @@ It calls for a complete manifest, README, bundled square logo, suggested prompts
 and local strict validation. Submission and acceptance are separate from local
 installation.
 
-| Field | Proposed value |
+| Field | Value |
 | --- | --- |
 | Product / identifier | Antipode / `antipode` |
 | Version | `0.1.1` |
 | Website | `https://antipode.quest` |
 | Public source | `https://github.com/mchl-schrdng/antipode-audio` |
-| Native artifact | `antipode-antigravity-0.1.1.zip`, with its SHA-256 sidecar |
+| Native artifact | [antipode-antigravity-0.1.1.zip](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.1/antipode-antigravity-0.1.1.zip) · [SHA-256](https://github.com/mchl-schrdng/antipode-audio/releases/download/v0.1.1/antipode-antigravity-0.1.1.zip.sha256) |
 | Native manifest source | `integrations/antigravity.plugin.json` |
 | Description and suggested prompts | [Shared distribution kit](README.md) |
 | Logo | Bundled square SVG, declared in the native manifest |
-| Publisher/contact | Verified account-owner details; not invented by this draft |
 
 Use the Google-specific archive for review. Its root `plugin.json` is the native
 Google manifest and its server configuration is `mcp_config.json`. The source
@@ -70,14 +69,14 @@ Source and artwork are Apache-2.0; bundled studies are CC0-1.0 to the extent of
 contributor rights. No trademark clearance or exclusivity is promised. Preserve
 the bundled licenses and [rights disclosures](../rights.md) in distribution.
 
-## Remaining portal work
+## Submission status
 
-The publisher must supply an authorized email and publisher identity, review the
-actual intake fields and terms presented in their authenticated session, attach
-or link the exact reviewed native artifact if requested, and record the resulting
-submission confirmation. The form's later fields have not been assumed here.
-If a public artifact URL is requested, publish the reviewed ZIP and checksum as
-release assets first; a local `dist/` path is not a download URL.
+The official [Antigravity Plugin Interest Form](https://forms.gle/2EX5RFYPoJe1UgxR9)
+was submitted on **2026-11-13**. Its confirmation read: “Your response has been
+recorded.” The submission included the project website, support and documentation
+links, the published v0.1.1 native artifact, product scope, verification and license
+details. Publisher contact information was supplied directly in the form.
 
-No fictitious representative, certification, approval, response time, submission
-receipt or Marketplace listing URL is supplied by this dossier.
+No receipt identifier or review timeframe was shown. Await Google's response;
+this confirms an interest-form submission, not Marketplace approval or a public
+listing. The published release assets remain unchanged.

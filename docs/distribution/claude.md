@@ -1,7 +1,8 @@
 # Claude directory submission dossier
 
-Prepared 2026-11-13 for Antipode 0.1.1. This is submission material, not a claim
-that Anthropic has accepted or published the plugin.
+Updated 2026-11-13 for Antipode 0.1.1. Directory submission is pending an eligible
+publisher session. No submission confirmation, approval or public listing is
+recorded.
 
 ## Route and source
 
@@ -17,12 +18,11 @@ still has a separate publication step. See the official
 | --- | --- |
 | Repository | `https://github.com/mchl-schrdng/antipode-audio` |
 | Plugin path | Empty: `.claude-plugin/plugin.json` is at the repository root |
-| Branch or tag | The reviewed 0.1.1 release commit/tag, once published; otherwise the reviewed default branch |
+| Branch or tag | Published release tag [v0.1.1](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.1) |
 | Name / display name | `antipode` / Antipode |
 | Version | `0.1.1` |
 | Listing, links and examples | [Shared distribution kit](README.md) and repository README |
 | Icon | Bundled square SVG, declared in the Claude manifest |
-| Contact and legal publisher | Verified by the account owner before submission |
 
 The portable ZIP is useful for local review. The public directory's submission
 source is the repository, not a Python wheel or a pull request to Anthropic's
@@ -76,10 +76,10 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
 
 ## Remaining portal work
 
-The account owner must confirm the public publisher identity/contact, connect the
-authorized GitHub account, choose the exact published revision, run portal
-validation, review any findings, and complete accurate data/audience answers.
-They must review the [directory terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms)
+Continue in an eligible publisher session, connect the authorized GitHub account,
+confirm the submission contact and published revision, run portal validation,
+review any findings, and complete accurate data/audience answers.
+Review the [directory terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms)
 and policy before accepting the portal acknowledgements. No terms acceptance,
 submission identifier, approval or listing URL is recorded by this dossier.
 

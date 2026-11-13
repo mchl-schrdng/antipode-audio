@@ -1,9 +1,10 @@
 # Distribution kit
 
-Prepared for Antipode 0.1.1. A prepared submission is not an approved listing.
-This directory records reusable listing copy, reproducible bundles and a review
-procedure. The [Claude dossier](claude.md) and [Antigravity dossier](antigravity.md)
-identify their respective portals and remaining publisher actions.
+Antipode [v0.1.1 is published](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.1).
+This directory records listing copy, reproducible bundles and a review procedure.
+As of 2026-11-13, Google's [Antigravity interest form](antigravity.md) submission
+is confirmed; [Claude directory submission](claude.md) is pending an eligible
+publisher session. Neither status establishes marketplace approval.
 
 ## Public details
 
@@ -19,7 +20,6 @@ identify their respective portals and remaining publisher actions.
 | Code and original artwork | Apache-2.0; see the bundled LICENSE and NOTICE |
 | Demo WAVs and recipes | CC0-1.0, to the extent contributors hold rights |
 | Publisher in the source manifest | Antipode contributors |
-| Verified submission contact | To be supplied by the account owner in the portal |
 
 ### Short description
 
@@ -85,6 +85,9 @@ model.
   [rights record](../rights.md) and [third-party notices](../../THIRD_PARTY_NOTICES.md).
 
 ## Reproducible plugin archives
+
+The published v0.1.1 assets are fixed to that release. Build from its Git tag to
+reproduce them; later documentation updates on `main` do not change those assets.
 
 Use Python 3.11+ from a reviewed source checkout. The builder requires every
 allowlisted file to be tracked in Git, including newly staged files. It reads
