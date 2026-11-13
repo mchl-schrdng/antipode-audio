@@ -50,30 +50,57 @@ Its deployment source is maintained separately from this public instrument repos
 
 ## Get started
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and Git, then:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) once and keep
+it on your agent application's PATH. Antipode prepares Python and its locked
+dependencies automatically on first launch. No separate Python setup, GPU or
+Antipode account is needed.
+
+**Claude Code — one command:**
+
+```sh
+claude plugin install antipode --marketplace mchl-schrdng/antipode-audio
+```
+
+Or run `/plugin install antipode --marketplace mchl-schrdng/antipode-audio` inside
+Claude Code. Start a new session and ask for a sound with Antipode.
+
+**Codex:**
+
+```sh
+codex plugin marketplace add mchl-schrdng/antipode-audio
+codex plugin add antipode@antipode-local
+```
+
+**Antigravity and OpenCode:** follow the short [installation guide](docs/integrations.md).
+These are direct installations from this project; marketplace approval is separate.
+
+The first launch needs internet access and may take longer while uv downloads
+Python and dependencies. Later launches work offline with the prepared runtime.
+Rendering itself never calls a network service. Your host agent may still use a
+cloud model for conversation. Plugin renders are saved in `~/.antipode/audio`.
+
+### Use the CLI
+
+With uv and Git installed:
 
 ```sh
 git clone https://github.com/mchl-schrdng/antipode-audio.git
 cd antipode-audio
-uv sync --locked --python 3.12
-uv run antipode generate first-light.wav --preset chime --duration 2
+uv run --locked antipode generate first-light.wav --preset chime --duration 2
 ```
 
-The command writes `audio/first-light.wav` and prints measurements as JSON. Choose
-a new filename for each render; existing files are never replaced. `--workspace`
-selects a different audio directory and goes before the subcommand.
+This writes `audio/first-light.wav` and prints measurements as JSON. Choose a new
+filename for each render; existing files are never replaced. `--workspace` selects
+another audio directory and goes before the subcommand.
 
 ```sh
-uv run antipode --workspace ./my-sounds presets
-uv run antipode --workspace ./my-sounds generate soft-glass.wav --preset glass --frequency 440
-uv run antipode --workspace ./my-sounds process soft-glass.wav soft-glass-reversed.wav --reverse --fade-out 0.4
-uv run antipode --workspace ./my-sounds analyze soft-glass-reversed.wav
-uv run antipode --workspace ./my-sounds render examples/recipes/event-horizon.json event-horizon.wav
+uv run --locked antipode --workspace ./my-sounds generate soft-glass.wav --preset glass --frequency 440
+uv run --locked antipode --workspace ./my-sounds render examples/recipes/event-horizon.json event-horizon.wav
+uv run --locked antipode --workspace ./my-sounds analyze event-horizon.wav
 ```
 
-There is no published PyPI installation assumed by these instructions. Install
-from this source checkout. After dependencies are prepared, the audio engine works
-offline. Your host agent may still use a cloud model for conversation.
+Add `--offline` after `uv run` to explicitly prevent runtime downloads once setup
+has completed. There is no assumed PyPI package or hidden installer.
 
 ## Give your agent an instrument
 

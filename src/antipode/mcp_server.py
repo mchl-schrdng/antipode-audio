@@ -26,7 +26,7 @@ def serve(workspace: str) -> None:
     engine = AudioEngine(workspace)
     server = MCPServer(
         "antipode-mcp",
-        version="0.1.0",
+        version="0.1.1",
         instructions=(
             "Create and process local sounds with deterministic DSP. Call list_presets first. "
             "All paths are relative to the configured audio workspace. Choose unique .wav "
@@ -43,6 +43,7 @@ def serve(workspace: str) -> None:
         server.add_tool(
             _tool_errors(function),
             annotations=ToolAnnotations(
+                title=function.__name__.replace("_", " ").title(),
                 readOnlyHint=read_only,
                 destructiveHint=False,
                 idempotentHint=read_only,

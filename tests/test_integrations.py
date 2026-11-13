@@ -1,12 +1,15 @@
 import asyncio
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import tomllib
 import unittest
+import wave
 
 from mcp import Client
 from mcp.client.stdio import StdioServerParameters
@@ -68,16 +71,68 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
                 args = [substitute(value) for value in spec["args"]]
                 args[-1] = str(Path(directory) / "audio")
                 env = {key: substitute(value) for key, value in spec["env"].items()}
-                env["UV_PYTHON"] = sys.executable
+                self.assertEqual(args[args.index("--python") + 1], "3.12")
+                # Exercise the CI matrix interpreter; the cold-install test checks 3.12 selection.
+                args[args.index("--python") + 1] = sys.executable
+                env["UV_OFFLINE"] = "1"
                 # MCP filters inherited variables; reuse the cache populated by installation.
                 env["UV_CACHE_DIR"] = cache_directory
-                self.assertIn("--offline", args)
+                self.assertNotIn("--offline", args)
                 self.assertIn("--locked", args)
                 self.assertTrue(Path(env["UV_PROJECT_ENVIRONMENT"]).is_relative_to(directory))
                 async with asyncio.timeout(60), Client(StdioServerParameters(command=shutil.which("uv"), args=args, env=env)) as client:
                     rendered = await client.call_tool("generate_sound", {"output": "connected.wav", "duration": 0.02})
                     self.assertFalse(rendered.is_error, rendered.content)
                     self.assertTrue((Path(directory) / "audio/connected.wav").is_file())
+
+
+    @unittest.skipUnless(os.environ.get("ANTIPODE_TEST_COLD_INSTALL") == "1", "opt-in test downloads a fresh Python and dependencies")
+    async def test_cold_install_from_read_only_source_then_restart_offline(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            source = base / "plugin with spaces"
+            source.mkdir()
+            for filename in ("pyproject.toml", "uv.lock", ".python-version", "README.md", "LICENSE", "NOTICE"):
+                shutil.copyfile(ROOT / filename, source / filename)
+            shutil.copytree(ROOT / "src", source / "src", ignore=shutil.ignore_patterns("__pycache__"))
+            original_files = {str(path.relative_to(source)) for path in source.rglob("*")}
+            for path in source.rglob("*"):
+                path.chmod(0o555 if path.is_dir() else 0o444)
+            source.chmod(0o555)
+            try:
+                spec = json.loads((ROOT / "mcp.json").read_text())["mcpServers"]["antipode"]
+                data = base / "data"
+                args = [value.replace("${PLUGIN_ROOT}", str(source)) for value in spec["args"]]
+                args[-1] = str(base / "audio")
+                env = {
+                    "UV_PROJECT_ENVIRONMENT": str(data / "venv"),
+                    "UV_CACHE_DIR": str(base / "empty-cache"),
+                    "UV_PYTHON_INSTALL_DIR": str(base / "empty-python"),
+                    "UV_PYTHON_PREFERENCE": "only-managed",
+                }
+                self.assertFalse(Path(env["UV_CACHE_DIR"]).exists())
+                self.assertFalse(Path(env["UV_PYTHON_INSTALL_DIR"]).exists())
+                for mode in ("cold", "offline"):
+                    started = time.monotonic()
+                    if mode == "offline":
+                        env["UV_OFFLINE"] = "1"
+                        env["UV_PYTHON_DOWNLOADS"] = "never"
+                    async with asyncio.timeout(180), Client(StdioServerParameters(command=shutil.which("uv"), args=args, env=env)) as client:
+                        print(f"{mode} MCP connection: {time.monotonic() - started:.2f}s", flush=True)
+                        tools = await client.list_tools()
+                        self.assertEqual(len(tools.tools), 5)
+                        rendered = await client.call_tool("generate_sound", {"output": mode + ".wav", "duration": 0.1})
+                        self.assertFalse(rendered.is_error, rendered.content)
+                    with wave.open(str(base / "audio" / (mode + ".wav"))) as audio:
+                        self.assertEqual(audio.getnframes(), 4800)
+                        self.assertEqual(audio.getframerate(), 48000)
+                self.assertFalse((source / ".venv").exists())
+                self.assertEqual(original_files, {str(path.relative_to(source)) for path in source.rglob("*")})
+                self.assertTrue(any(Path(env["UV_PYTHON_INSTALL_DIR"]).iterdir()))
+            finally:
+                source.chmod(0o755)
+                for path in source.rglob("*"):
+                    path.chmod(0o755 if path.is_dir() else 0o644)
 
 
 if __name__ == "__main__":

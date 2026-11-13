@@ -1,120 +1,121 @@
 # Connect your agent
 
-Antipode ships one local audio engine, one MCP server and one sound-design skill. Codex, Claude Code and Antigravity can load the plugin bundle. OpenCode connects the same MCP server and skill through its project configuration. No hosted MCP endpoint is involved.
+Antipode is one local audio engine, one MCP server and one sound-design skill. Codex, Claude Code and Antigravity load the plugin bundle. OpenCode connects the same server and skill through its project configuration.
 
-## Prepare once
+## Install uv once
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and make sure it is on your agent application's PATH. Antipode's first launch automatically prepares Python 3.12 and the dependencies fixed in `uv.lock`. No `uv sync` step, GPU, model download or Antipode account is required.
 
-```sh
-git clone https://github.com/mchl-schrdng/antipode-audio.git
-cd antipode-audio
-uv sync --locked
-uv run --offline antipode presets
-```
+The first launch needs internet access. Later launches can use the prepared runtime offline. The audio engine itself never uses the network. Your host agent may use a cloud model for conversation. If a slow first download exceeds the host's startup timeout, let the download complete where possible and reconnect the MCP server. For environments with no network at all, prepare the runtime before disconnecting.
 
-The checked-in `.python-version` selects Python 3.12. Initial setup may download Python and dependencies. The lockfile fixes dependency versions. Plugin launches then use `--locked --offline` and keep their virtual environment in the host's writable plugin-data directory, outside the plugin source. No network is used by the audio engine.
-
-Keep `uv` on the agent application's PATH. If a desktop app cannot find it, use the source-checkout configuration below, whose command is an absolute Python path. After a dependency upgrade, run `uv sync --locked` again before using offline mode.
-
-Plugin audio goes to `~/.antipode/audio`. This location is outside the plugin installation and survives plugin replacement. The server expands `~` itself. Agents can only address relative WAV paths inside that workspace, and existing files are never replaced. Different agents should use different output names or subdirectories.
-
-## Codex
-
-From the prepared checkout:
-
-```sh
-codex plugin marketplace add .
-codex plugin add antipode@antipode-local
-```
-
-Start a new Codex session and use the Antipode skill. The plugin uses the portable `plugin.json` and `mcp.json` format; `.agents/plugins/marketplace.json` supplies the repository catalog. This is a local desktop/CLI plugin, not a claim of approval in OpenAI's public directory. [Official packaging documentation](https://developers.openai.com/plugins/build/plugins), [local MCP guidance](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+Plugin environments live in the host's writable plugin-data directory, outside the installed source. Plugin audio goes to `~/.antipode/audio` and survives plugin replacement. The server expands `~` itself. Agents can only address relative WAV paths within that workspace; existing files are never replaced. Use different output names or subdirectories for different agents.
 
 ## Claude Code
 
-Try the plugin in one session without installing it globally:
+Run in your terminal:
 
 ```sh
-claude --plugin-dir .
+claude plugin install antipode --marketplace mchl-schrdng/antipode-audio
 ```
 
-Use `/antipode:antipode` or ask Claude to design a sound with Antipode. For a persistent installation:
-
-```sh
-claude plugin marketplace add .
-claude plugin install antipode@antipode-local
-```
-
-The `.claude-plugin/plugin.json` manifest points at `integrations/claude.mcp.json`; paths use Claude's plugin variables. [Official plugin reference](https://code.claude.com/docs/en/plugins-reference).
-
-Once this repository is public, Claude Code versions supporting direct marketplace installation can also use:
+Or run inside Claude Code:
 
 ```text
 /plugin install antipode --marketplace mchl-schrdng/antipode-audio
 ```
 
-Run the preparation step first: startup deliberately stays offline and fails clearly if dependencies are missing.
+Start a new session, then use `/antipode:antipode` or ask Claude to design a sound with Antipode. This adds the project's own marketplace and installs its plugin; it does not imply approval in Anthropic's public directory. The terminal one-step command requires Claude Code 2.1.292 or later; the in-session `/plugin` form requires 2.1.275 or later. [Official installation commands](https://code.claude.com/docs/en/plugins/cli-reference), [plugin manifest reference](https://code.claude.com/docs/en/plugins-reference).
+
+For an older client, add the marketplace first:
+
+```sh
+claude plugin marketplace add mchl-schrdng/antipode-audio
+claude plugin install antipode@antipode-local
+```
+
+## Codex
+
+```sh
+codex plugin marketplace add mchl-schrdng/antipode-audio
+codex plugin add antipode@antipode-local
+```
+
+Start a new Codex session and use the Antipode skill. `plugin.json` and `mcp.json` use the portable Agent Plugins format; `.agents/plugins/marketplace.json` supplies the repository catalog. This is a local desktop/CLI plugin. [Official packaging documentation](https://developers.openai.com/plugins/build/plugins), [local MCP guidance](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
 
 ## Antigravity
 
-From the prepared checkout:
+Download `antipode-antigravity-0.1.1.zip` from [GitHub Releases](https://github.com/mchl-schrdng/antipode-audio/releases). Extract it into a new `antipode` folder, then:
 
 ```sh
-agy plugin validate --strict .
-agy plugin install .
+agy plugin install ./antipode
 ```
 
-Restart the agent session, then invoke Antipode. The portable manifest uses `mcp.json`; the matching `mcp_config.json` supports versions whose Agent Plugins format is disabled. Both configurations launch the same server. The app can also install the local folder from its plugin interface. [Official plugin installation](https://antigravity.google/docs/plugins), [packaging reference](https://antigravity.google/docs/build-plugins).
+Restart the agent session and invoke Antipode. The app can also install the extracted local folder from its plugin interface. Its Google-specific package includes the square logo, starter prompts and native `mcp_config.json`. [Official plugin installation](https://antigravity.google/docs/plugins), [packaging reference](https://antigravity.google/docs/build-plugins).
+
+The repository's portable `plugin.json` and Google's native listing schema differ. The Google archive uses `integrations/antigravity.plugin.json` as its root manifest and omits portable `mcp.json`; the engine and skill are identical. Both formats pass their strict native validators. See [distribution](distribution/README.md) for reproducible packaging and submission status.
 
 ## OpenCode
 
-Print a configuration using absolute paths for this checkout:
+With Git installed, clone this repository and print its configuration:
 
 ```sh
-uv run --offline python scripts/client_config.py opencode
+git clone https://github.com/mchl-schrdng/antipode-audio.git
+cd antipode-audio
+uv run --locked python scripts/client_config.py opencode
 ```
 
-Merge the printed `mcp.servers.antipode` entry and `skills` path into the target project's `opencode.json`. Preserve any existing settings. Then:
+Merge the printed `mcp.servers.antipode` entry and `skills` path into your project's `opencode.json`, preserving existing settings. Then run:
 
 ```sh
 opencode mcp list
 ```
 
-The server should be connected; `opencode debug skill` should include `antipode`. Start a fresh session and ask for a sound. This uses OpenCode's MCP and skill extension points; it does not install an unrelated JavaScript lifecycle plugin. The config shape targets current OpenCode's `mcp.servers` format. [Official MCP configuration](https://opencode.ai/docs/mcp-servers), [skill configuration](https://opencode.ai/docs/skills).
+The server should be connected; `opencode debug skill` should include `antipode`. Start a fresh session and ask for a sound. This uses OpenCode's MCP and skill extension points. [Official MCP configuration](https://opencode.ai/docs/mcp-servers), [skill configuration](https://opencode.ai/docs/skills).
 
-## Direct MCP configuration
+## Direct MCP configuration and local development
 
-If a host does not support local plugin bundles, keep the prepared checkout and print its MCP configuration:
-
-```sh
-uv run --offline python scripts/client_config.py codex
-uv run --offline python scripts/client_config.py claude
-uv run --offline python scripts/client_config.py antigravity
-```
-
-The generator prints TOML for Codex and JSON for the others. It never edits settings. Merge the output into the client's MCP configuration. Copy `skills/antipode` to the host's project skill directory if you also want the sound-design workflow; a direct MCP connection alone exposes the tools and their descriptions.
-
-Use `--workspace /absolute/path/to/project/audio` on the generator to choose another audio directory. Keep the source checkout in place, because these configurations reference its `.venv` interpreter. The main commands also work directly:
+From a source checkout, print a configuration for a host that does not support plugin bundles:
 
 ```sh
-uv run --offline antipode --workspace ./audio generate chime.wav --preset glass
-uv run --offline antipode --workspace ./audio render examples/recipes/event-horizon.json atmosphere.wav
-uv run --offline antipode --workspace ./audio analyze atmosphere.wav
+uv run --locked python scripts/client_config.py codex
+uv run --locked python scripts/client_config.py claude
+uv run --locked python scripts/client_config.py antigravity
 ```
 
-Recipe filenames are ordinary CLI inputs; tool audio paths remain confined to the audio workspace.
+The generator prints TOML for Codex and JSON for the others. It never edits settings. The first command prepares the checkout's `.venv`; generated configurations use that interpreter's absolute path. Keep the checkout in place. Copy `skills/antipode` to the host's project skill directory to add the creative workflow. A direct MCP connection alone exposes the tools and their descriptions.
+
+Use `--workspace /absolute/path/to/project/audio` on the generator to choose another audio directory. If a desktop host cannot find `uv`, this absolute-interpreter configuration also avoids depending on the desktop application's PATH.
+
+To try Claude without installing the plugin, run `claude --plugin-dir .` from the checkout. For the CLI:
+
+```sh
+uv run --locked antipode --workspace ./audio generate chime.wav --preset glass
+uv run --locked antipode --workspace ./audio render examples/recipes/event-horizon.json atmosphere.wav
+uv run --locked antipode --workspace ./audio analyze atmosphere.wav
+```
+
+Once prepared, add `--offline` after `uv run` to prohibit downloads. For plugin hosts, setting `UV_OFFLINE=1` in that server's MCP environment enforces the same restriction. A new plugin version or deleted runtime may need network setup again. Recipe filenames are ordinary CLI inputs; tool audio paths remain confined to the configured workspace.
 
 ## Verification scope
 
-| Surface | Verified on the development machine |
+| Surface | Verified |
 | --- | --- |
-| MCP protocol | Real subprocess connections with modern and legacy negotiation; tool discovery, generation, layered rendering, processing, analysis and rejected invalid calls |
-| Plugin launch | Every shipped MCP configuration starts offline, uses a separate virtual environment and writes a real WAV; a relocated read-only package also launches from the prepared dependency cache |
+| MCP protocol | Real subprocess connections with modern and legacy negotiation; all five tools, layered rendering, processing, analysis and rejected invalid calls |
+| Cold installation | Empty dependency cache and empty managed-Python directory; Python 3.12 and dependencies downloaded from a read-only source copy; real WAV generated; second startup with `UV_OFFLINE=1` and Python downloads disabled also generated a WAV, without source writes; cold MCP connection 8.87 seconds, offline reconnection 0.48 seconds on this machine |
+| Plugin launch configurations | All three shipped launch configurations start with an offline prepared cache, keep their virtual environment outside the source and write a real WAV |
 | Codex | Native catalog discovery and app-server connection; all five tools discovered with schemas and no discovery error |
-| Claude Code | Strict plugin and marketplace validation; native MCP connection reports **Connected** in an isolated test configuration |
-| Antigravity 1.5.8 | Strict plugin validation; a bounded native agent session called `generate_sound` through MCP and created a 0.1-second WAV (4800 frames at 48 kHz) |
+| Claude Code 2.1.296 | Strict manifest validation; actual 0.1.1 installation from a local marketplace snapshot in an empty test profile; native MCP health check connected in 6.35 seconds with a fresh dependency cache |
+| Antigravity 1.5.8 | Google package passed strict validation; actual 0.1.1 plugin installation discovered one skill and one MCP server; a bounded native session generated 4800 frames at 48 kHz through the installed plugin; total session 25.52 seconds with a fresh dependency cache |
 | OpenCode 1.19.5 | Native MCP connection reports **Connected**; native skill discovery finds Antipode |
 
-These checks do not establish that every model will follow the skill equally well. A logged-in conversational sound-design session has not been exercised in all four products, and native client checks have only run on macOS. The automated Python suite is independent of model accounts.
+Native client checks ran on macOS. Timings describe this machine and connection, not a guarantee for other machines. CI exercises the Python suite on Linux, macOS and Windows; it does not drive authenticated models. A conversational sound-design session has not been exercised in every host.
 
-Antigravity's `agy mcp list` is a catalog command, so the native smoke test used a temporary uniquely named MCP registration and an existing authenticated session. Only its `generate_sound` call was allowed; terminal, file and web actions were denied for that session. The actual WAV was checked, the test registration removed, and the original configuration restored. No login or persistent permission change was made. Installation into each host's permanent plugin cache remains separate from the verified manifest, relocated-package and native-server checks above.
+The Antigravity test used an existing authenticated session, permitted only the plugin's `generate_sound` tool, wrote to a unique temporary audio workspace and removed the test plugin afterward. Claude used an isolated configuration directory. No login was performed. Marketplace review and approval are separate from these installation checks.
+
+To repeat the cold-install test explicitly (requires network and downloads a fresh Python runtime):
+
+```sh
+ANTIPODE_TEST_COLD_INSTALL=1 uv run --locked python -m unittest discover -s tests -p test_integrations.py -v
+```
+
+On PowerShell, set `$env:ANTIPODE_TEST_COLD_INSTALL = "1"` first, then run the `uv run` command. Ordinary tests reuse the prepared dependency cache and skip this network test.

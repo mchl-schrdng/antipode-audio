@@ -1,0 +1,26 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "antipode",
+  "version": "0.1.1",
+  "description": "Create original sounds with your coding agent: local synthesis, layered stereo recipes, effects and WAV export. No sample library or model download.",
+  "author": {
+    "name": "Antipode contributors",
+    "url": "https://antipode.quest"
+  },
+  "homepage": "https://antipode.quest",
+  "repository": "https://github.com/mchl-schrdng/antipode-audio",
+  "license": "Apache-2.0",
+  "keywords": [
+    "audio",
+    "sound-design",
+    "mcp",
+    "local-first"
+  ],
+  "displayName": "Antipode",
+  "logo": "assets/brand/icon.svg",
+  "suggestedPrompts": [
+    "Create a deep breathing drone with glass accents.",
+    "Design a short, warm notification sound.",
+    "Turn a metallic hit into a spacious cinematic impact."
+  ]
+}

@@ -19,6 +19,7 @@ during a call. The MCP process inherits the permissions of the user who runs it.
 Use your host agent's permissions and OS isolation where stronger separation is
 needed. Do not expose this server through an untrusted network wrapper.
 
-Report suspected vulnerabilities using GitHub private vulnerability reporting
-when available. Avoid posting sensitive audio, local paths, credentials or
+Report suspected vulnerabilities through
+[GitHub private vulnerability reporting](https://github.com/mchl-schrdng/antipode-audio/security/advisories/new),
+which is enabled for this repository. Avoid posting sensitive audio, local paths, credentials or
 exploit details in a public issue.

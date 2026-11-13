@@ -1,10 +1,25 @@
 {
   "name": "antipode",
-  "version": "0.1.0",
-  "description": "Original sound design for coding agents. Local synthesis, layered stereo compositions and WAV processing.",
-  "author": { "name": "Antipode contributors" },
+  "version": "0.1.1",
+  "description": "Create original sounds with your coding agent: local synthesis, layered stereo recipes, effects and WAV export. No sample library or model download.",
+  "author": {
+    "name": "Antipode contributors",
+    "url": "https://antipode.quest"
+  },
   "homepage": "https://antipode.quest",
   "repository": "https://github.com/mchl-schrdng/antipode-audio",
   "license": "Apache-2.0",
-  "mcpServers": "./integrations/claude.mcp.json"
+  "mcpServers": "./integrations/claude.mcp.json",
+  "displayName": "Antipode",
+  "icon": "./assets/brand/icon.svg",
+  "documentationUrl": "https://github.com/mchl-schrdng/antipode-audio/blob/main/docs/integrations.md",
+  "supportUrl": "https://antipode.quest/support",
+  "privacyPolicyUrl": "https://antipode.quest/privacy",
+  "termsOfServiceUrl": "https://antipode.quest/terms",
+  "keywords": [
+    "audio",
+    "sound-design",
+    "mcp",
+    "local-first"
+  ]
 }

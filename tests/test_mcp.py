@@ -51,6 +51,7 @@ class McpTests(unittest.IsolatedAsyncioTestCase):
                     process = await client.call_tool("process_audio", {"source": "mcp.wav", "output": "reversed.wav", "reverse": True})
                     self.assertFalse(process.is_error, process.content)
                     for tool in catalog.tools:
+                        self.assertTrue(tool.annotations.title)
                         self.assertFalse(tool.annotations.destructive_hint)
                         self.assertFalse(tool.annotations.open_world_hint)
                         self.assertEqual(tool.annotations.read_only_hint, tool.name in {"list_presets", "analyze_audio"})

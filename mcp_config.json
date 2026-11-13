@@ -2,8 +2,22 @@
   "mcpServers": {
     "antipode": {
       "command": "uv",
-      "args": ["run", "--project", "${PLUGIN_ROOT}", "--locked", "--offline", "--no-dev", "--no-env-file", "antipode-mcp", "--workspace", "~/.antipode/audio"],
-      "env": { "UV_PROJECT_ENVIRONMENT": "${PLUGIN_DATA}/venv" }
+      "args": [
+        "run",
+        "--project",
+        "${PLUGIN_ROOT}",
+        "--python",
+        "3.12",
+        "--locked",
+        "--no-dev",
+        "--no-env-file",
+        "antipode-mcp",
+        "--workspace",
+        "~/.antipode/audio"
+      ],
+      "env": {
+        "UV_PROJECT_ENVIRONMENT": "${PLUGIN_DATA}/venv"
+      }
     }
   }
 }
