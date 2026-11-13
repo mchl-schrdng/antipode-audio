@@ -1,0 +1,19 @@
+{
+  "name": "antipode",
+  "version": "0.1.2",
+  "description": "Create original sound effects and layered atmospheres locally. Procedural synthesis, editable recipes, and WAV export.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "antipode": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--locked",
+        "${extensionPath}/scripts/claude_mcp.py",
+        "--workspace",
+        "~/.antipode/audio"
+      ],
+      "timeout": 120000
+    }
+  }
+}
