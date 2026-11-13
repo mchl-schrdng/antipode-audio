@@ -18,6 +18,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ConfigurationTests(unittest.TestCase):
+    def test_gemini_extension_reuses_the_bundled_runtime_and_skill(self):
+        manifest = json.loads((ROOT / "gemini-extension.json").read_text())
+        project = tomllib.loads((ROOT / "pyproject.toml").read_text())
+        self.assertEqual(manifest["name"], "antipode")
+        self.assertEqual(manifest["version"], project["project"]["version"])
+        self.assertTrue((ROOT / manifest["contextFileName"]).is_file())
+        self.assertTrue((ROOT / "skills/antipode/SKILL.md").is_file())
+        server = manifest["mcpServers"]["antipode"]
+        self.assertEqual(server["command"], "uv")
+        self.assertEqual(server["args"][2], "${extensionPath}/scripts/claude_mcp.py")
+        self.assertNotIn("trust", server)
+        self.assertNotIn("env", server)
+
     def test_codex_toml_preserves_non_bmp_unicode_paths(self):
         with tempfile.TemporaryDirectory() as directory:
             copied_script = Path(directory) / "sound 🎵" / "scripts" / "client_config.py"
@@ -58,11 +71,12 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
     @unittest.skipUnless(shutil.which("uv"), "uv is required to verify plugin launch commands")
     async def test_all_plugin_manifests_launch_offline_outside_the_plugin_root(self):
         cache_directory = subprocess.check_output([shutil.which("uv"), "cache", "dir"], text=True).strip()
-        for filename in ("mcp.json", "integrations/claude.mcp.json", "mcp_config.json"):
+        for filename in ("mcp.json", "integrations/claude.mcp.json", "mcp_config.json", "gemini-extension.json"):
             with self.subTest(manifest=filename), tempfile.TemporaryDirectory() as directory:
                 spec = json.loads((ROOT / filename).read_text())["mcpServers"]["antipode"]
 
                 def substitute(value):
+                    value = value.replace("${extensionPath}", str(ROOT))
                     for prefix in ("PLUGIN", "CLAUDE_PLUGIN"):
                         value = value.replace("${" + prefix + "_ROOT}", str(ROOT))
                         value = value.replace("${" + prefix + "_DATA}", directory)
@@ -71,7 +85,7 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
                 args = [substitute(value) for value in spec["args"]]
                 args[-1] = str(Path(directory) / "audio")
                 env = {key: substitute(value) for key, value in spec.get("env", {}).items()}
-                if filename == "integrations/claude.mcp.json":
+                if filename in ("integrations/claude.mcp.json", "gemini-extension.json"):
                     self.assertEqual(args[:2], ["run", "--locked"])
                     self.assertEqual(Path(args[2]), ROOT / "scripts/claude_mcp.py")
                     self.assertNotIn("env", spec)
@@ -89,6 +103,7 @@ class PluginLaunchTests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotIn("--offline", args)
                 self.assertIn("--locked", args)
                 async with asyncio.timeout(60), Client(StdioServerParameters(command=shutil.which("uv"), args=args, env=env)) as client:
+                    self.assertEqual(len((await client.list_tools()).tools), 5)
                     rendered = await client.call_tool("generate_sound", {"output": "connected.wav", "duration": 0.02})
                     self.assertFalse(rendered.is_error, rendered.content)
                     self.assertTrue((Path(directory) / "audio/connected.wav").is_file())

@@ -1,6 +1,6 @@
 # Connect your agent
 
-Antipode is one local audio engine, one MCP server and one sound-design skill. Codex, Claude Code and Antigravity load the plugin bundle. OpenCode connects the same server and skill through its project configuration.
+Antipode is one local audio engine, one MCP server and one sound-design skill. Codex, Claude Code and Antigravity load the plugin bundle. Gemini CLI loads its extension manifest. OpenCode connects the same server and skill through its project configuration.
 
 ## Install uv once
 
@@ -8,7 +8,7 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and make s
 
 The first launch needs internet access. Later launches can use the prepared runtime offline. The audio engine itself never uses the network. Your host agent may use a cloud model for conversation. If a slow first download exceeds the host's startup timeout, let the download complete where possible and reconnect the MCP server. For environments with no network at all, prepare the runtime before disconnecting.
 
-Claude Code uses uv's isolated script cache; the other plugin hosts use their writable plugin-data directory. Both keep environments outside the installed source. Plugin audio goes to `~/.antipode/audio` and survives plugin replacement. The server expands `~` itself. Agents can only address relative WAV paths within that workspace; existing files are never replaced. Use different output names or subdirectories for different agents.
+Claude Code and Gemini CLI use uv's isolated script cache; Codex and Antigravity use their writable plugin-data directory. Both keep environments outside the installed source. Plugin audio goes to `~/.antipode/audio` and survives plugin replacement. The server expands `~` itself. Agents can only address relative WAV paths within that workspace; existing files are never replaced. Use different output names or subdirectories for different agents.
 
 ## Claude Code
 
@@ -55,6 +55,38 @@ agy plugin install ./antipode
 Restart the agent session and invoke Antipode. The app can also install the extracted local folder from its plugin interface. Its Google-specific package includes the square logo, starter prompts and native `mcp_config.json`. [Official plugin installation](https://antigravity.google/docs/plugins), [packaging reference](https://antigravity.google/docs/build-plugins).
 
 The repository's portable `plugin.json` and Google's native listing schema differ. The Google archive uses `integrations/antigravity.plugin.json` as its root manifest and omits portable `mcp.json`; the engine and skill are identical. Both formats pass their strict native validators. See [distribution](distribution/README.md) for reproducible packaging and submission status.
+
+## Gemini CLI
+
+With [Gemini CLI](https://geminicli.com/docs/get-started/installation/), Git and uv
+installed, run:
+
+```sh
+gemini extensions install https://github.com/mchl-schrdng/antipode-audio
+gemini extensions list
+gemini mcp list
+```
+
+Review Gemini's installation prompt, then start a new session and ask it to make
+a sound with Antipode. The extension loads `GEMINI.md`, the existing Antipode
+skill and the five MCP tools. `gemini mcp list` should report **Connected**. Work
+in a folder you trust; Gemini can disable MCP connections in untrusted folders.
+No Gemini API key is required by Antipode, though the host has its own
+authentication requirements.
+
+The root `gemini-extension.json` uses `${extensionPath}` to launch the same
+locked script as Claude Code. The script's filename remains `claude_mcp.py`;
+its implementation is host independent. Python and dependencies live in uv's
+cache, outside the installed extension. The Gemini connection timeout allows up
+to two minutes for first-run setup.
+
+The source-only `gemini-v0.1.2` release includes the extension manifest and uses
+the unchanged 0.1.2 engine. Add `--ref gemini-v0.1.2` to the install command to
+pin that release. The earlier v0.1.2 tag and downloads do not include the Gemini
+manifest. Update with `gemini extensions update antipode`; remove the extension with
+`gemini extensions uninstall antipode`. Removing it does not delete generated
+audio or uv's dependency cache. See the [official extension reference](https://geminicli.com/docs/extensions/reference/)
+and [gallery distribution record](distribution/gemini.md).
 
 ## OpenCode
 
@@ -104,15 +136,22 @@ Once prepared, add `--offline` after `uv run` to prohibit downloads. Launching y
 | --- | --- |
 | MCP protocol | Real subprocess connections with modern and legacy negotiation; all five tools, layered rendering, processing, analysis and rejected invalid calls |
 | Cold installation | Empty dependency cache and empty managed-Python directory; Python 3.12 and dependencies downloaded from a read-only source copy; real WAV generated; second startup with `UV_OFFLINE=1` and Python downloads disabled also generated a WAV, without source writes; both project and Claude script launchers tested; Claude cold connection 7.81 seconds and offline reconnection 1.20 seconds on this machine |
-| Plugin launch configurations | All three shipped launch configurations start with an offline prepared cache, keep their environment outside the source and write a real WAV |
+| Plugin launch configurations | All four shipped launch configurations start with an offline prepared cache, keep their environment outside the source and write a real WAV |
 | Codex | Native catalog discovery and app-server connection; all five tools discovered with schemas and no discovery error |
 | Claude Code 2.1.296 | Strict manifest validation; actual 0.1.2 installation from a read-only local marketplace snapshot in an empty test profile; native MCP health check connected through the bundled script in 4.86 seconds with a fresh dependency cache |
+| Gemini CLI 0.64.0 | Actual copied extension installation in an empty `GEMINI_CLI_HOME`; native discovery loaded `GEMINI.md`, the Antipode skill and MCP server; native health checks connected normally and with uv offline; a separate protocol client using the installed command discovered all five tools and generated 4800 frames at 48 kHz; installed source stayed unchanged and read-only |
 | Antigravity 1.5.8 | Google package passed strict validation; actual 0.1.1 plugin installation discovered one skill and one MCP server; a bounded native session generated 4800 frames at 48 kHz through the installed plugin; total session 25.52 seconds with a fresh dependency cache |
 | OpenCode 1.19.5 | Native MCP connection reports **Connected**; native skill discovery finds Antipode |
 
 Native client checks ran on macOS. Timings describe this machine and connection, not a guarantee for other machines. CI exercises the Python suite on Linux, macOS and Windows; it does not drive authenticated models. A conversational sound-design session has not been exercised in every host.
 
 The Antigravity test used an existing authenticated session, permitted only the plugin's `generate_sound` tool, wrote to a unique temporary audio workspace and removed the test plugin afterward. Claude used an isolated configuration directory. No login was performed. Marketplace review and approval are separate from these installation checks.
+
+Gemini used an empty configuration profile and a temporary audio workspace. Its
+first native skill/MCP discovery took 5.24 seconds with an empty uv dependency
+cache; the subsequent offline health check took 1.81 seconds. No authenticated
+Gemini model conversation was run. These installation and protocol checks do not
+establish that the extension is indexed in Google's gallery.
 
 To repeat the cold-install test explicitly (requires network and downloads a fresh Python runtime):
 

@@ -11,6 +11,11 @@ available through this repository's own marketplace and release downloads.
 Google's [Antigravity interest form](antigravity.md) submission remains confirmed
 for the historical v0.1.1 package; no marketplace approval is recorded.
 
+The [Gemini CLI extension](gemini.md) is distributed from this repository, with
+gallery discovery tracked separately. The [OpenAI readiness dossier](openai.md)
+records the local-MCP partner eligibility and packaging requirements that remain
+before a public-directory submission. No OpenAI submission or approval is claimed.
+
 ## Public details
 
 | Field | Value |
@@ -54,7 +59,7 @@ model.
 
 ## Access, data and limitations
 
-- **Local execution:** Claude starts `uv run --locked` against the bundled
+- **Local execution:** Claude and Gemini CLI start `uv run --locked` against the bundled
   `scripts/claude_mcp.py`, whose adjacent lockfile pins its script environment.
   Other hosts use the bundled Python project and `uv.lock`. `uv` prepares Python and dependencies as needed, using its
   configured download sources and cache. This first-run software download is not
@@ -66,7 +71,7 @@ model.
   WAVs within that workspace. Absolute paths, traversal and symlinked audio paths
   are rejected. Use a trusted local directory; this is an application boundary,
   not an operating-system sandbox against another process changing files.
-- **Other writes:** Claude dependencies and its script environment live in
+- **Other writes:** Claude and Gemini CLI dependencies and their script environments live in
   `uv`'s cache. Other hosts use their writable plugin-data virtual environment.
   uv may also create a managed Python installation. The skill asks
   the coding agent to save the recipe using its own file tool. That host action

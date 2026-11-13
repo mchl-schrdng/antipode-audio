@@ -29,8 +29,8 @@ Antipode synthesizes it locally and exports a WAV you can keep refining.
 **Local DSP. Open source. No sample library. No model weights.**
 
 Antipode is a Python CLI and an MCP instrument with agent skills and installation
-configurations for **Codex, Claude Code, Antigravity and OpenCode**. It is an early
-release; see the [verification record](docs/verification.md) for what has actually
+configurations for **Codex, Claude Code, Gemini CLI, Antigravity and OpenCode**. It is an early
+release; see the [integration checks](docs/integrations.md#verification-scope) for what has actually
 been tested in each host. It is not a VST/AU instrument or a neural text-to-music
 model.
 
@@ -70,6 +70,17 @@ Claude Code. Start a new session and ask for a sound with Antipode.
 codex plugin marketplace add mchl-schrdng/antipode-audio
 codex plugin add antipode@antipode-local
 ```
+
+**Gemini CLI:**
+
+```sh
+gemini extensions install https://github.com/mchl-schrdng/antipode-audio
+```
+
+Restart Gemini CLI after installation. The Gemini release is `gemini-v0.1.2`;
+the earlier v0.1.2 archives do not contain its extension manifest. See
+[Gemini setup](docs/integrations.md#gemini-cli) and the
+[gallery distribution record](docs/distribution/gemini.md).
 
 **Antigravity and OpenCode:** follow the short [installation guide](docs/integrations.md).
 These are direct installations from this project; marketplace approval is separate.
