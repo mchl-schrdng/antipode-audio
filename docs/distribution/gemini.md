@@ -1,8 +1,11 @@
 # Gemini CLI extension distribution
 
-The Gemini CLI extension is prepared for a source-only `gemini-v0.1.2` release.
-Gallery discovery has not yet been confirmed. It is separate from
-the historical Antigravity submission; no new Antigravity form is involved.
+The Gemini CLI extension was published on 2026-11-13 as the source-only
+[`gemini-v0.1.2` release](https://github.com/mchl-schrdng/antipode-audio/releases/tag/gemini-v0.1.2).
+The default public installation passed and the repository topic
+`gemini-cli-extension` is enabled. **Gallery indexing is pending**; no live
+listing or Google endorsement is claimed. This is separate from the historical
+Antigravity submission; no new Antigravity form is involved.
 
 | Field | Value |
 | --- | --- |
@@ -53,13 +56,23 @@ then reported **Connected**, including with uv forced offline. A separate MCP
 protocol client used the installed launch command to discover all five tools and
 generate a 4800-frame, 48 kHz WAV. Installed files were read-only and their hashes
 did not change. The test used a temporary audio workspace, with no login or
-changes to the user's Gemini settings. It did not run a Gemini model conversation
-or test the public GitHub installation before publication.
+changes to the user's Gemini settings. It did not run a Gemini model conversation.
+
+After publication, the same CLI installed the public repository without `--ref`
+in a second empty profile. Installation took 2.47 seconds and recorded
+`github-release`, tag `gemini-v0.1.2`, version `0.1.2`. Native discovery loaded
+the context, skill and server. MCP health checks reported **Connected** normally
+and offline. A protocol client using the installed command generated a new
+4800-frame, 48 kHz WAV. Installed files remained read-only and unchanged; audio
+was redirected to a temporary workspace through the test profile. No login or
+authenticated model conversation was used.
 
 ## Gallery publication
 
 Google's [official release guide](https://github.com/google-gemini/gemini-cli/blob/main/docs/extensions/releasing.md)
-describes automatic discovery. After reviewing and pushing these files:
+describes automatic discovery. Publication steps 1–4 below are complete.
+The gallery listing was absent at the last check, and GitHub Code Search still
+returned zero manifest matches. That does not affect the verified direct install.
 
 1. Keep the GitHub repository public and the manifest at its absolute root.
 2. Publish `gemini-v0.1.2` from the reviewed commit as the latest GitHub release,
