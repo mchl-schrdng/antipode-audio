@@ -2,11 +2,11 @@
 
 Current release package: [Antipode v0.1.2](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.2).
 This directory records listing copy, reproducible bundles and a review procedure.
-As of 2026-11-13, Google's [Antigravity interest form](antigravity.md) submission
-is confirmed for the historical v0.1.1 package. [Claude portal validation](claude.md)
-passed at commit `ad98569` with zero blocking findings, eight warnings and four
-policy holds. Legal acknowledgements and final submission remain pending; no
-Claude submission or marketplace approval is recorded.
+On 2026-11-13, [Antipode 0.1.2 was submitted to Claude](claude.md) from commit
+`ad2a6a3` for Claude Code only. The security scan is in progress; human review,
+approval and public listing remain pending. Automatic publication is disabled.
+Google's [Antigravity interest form](antigravity.md) submission remains confirmed
+for the historical v0.1.1 package; no marketplace approval is recorded.
 
 ## Public details
 

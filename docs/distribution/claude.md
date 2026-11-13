@@ -1,29 +1,30 @@
 # Claude directory submission dossier
 
-Updated 2026-11-13 for Antipode 0.1.2. Portal validation passed at
-[commit ad98569](https://github.com/mchl-schrdng/antipode-audio/commit/ad985696c5878a0a0830bbcd12c5b03a903ad2f4):
-**zero blocking findings, eight warnings and four policy holds**. The GitHub
-connection and publisher checks passed. Legal acknowledgements and the final
-submission remain pending. No submission confirmation, approval or public listing
-is recorded.
+**Submitted for review on 2026-11-13:** Antipode 0.1.2, from
+[commit ad2a6a3](https://github.com/mchl-schrdng/antipode-audio/commit/ad2a6a37d46352fe7e26b3aa25da0c582c621bf6),
+for **Claude Code only**. The portal confirms submission and shows the security
+scan in progress. Human review has not started; approval and public listing
+remain pending. Automatic publication is disabled.
 
 ## Route and source
 
-Use the [developer portal](https://claude.ai/directory/manage), choose a plugin
-bundle, and submit the GitHub source below. The portal requires an eligible paid
+The plugin was submitted through the [developer portal](https://claude.ai/directory/manage)
+using the GitHub source below. The portal requires an eligible paid
 plan/role and a connected GitHub account with push access. Its validation applies
 to a specific commit and goes beyond the local CLI validator. A passing version
 still has a separate publication step. See the official
 [submission instructions](https://claude.com/docs/plugins/submit) and
 [publishing guide](https://code.claude.com/docs/en/plugins/publish).
 
-| Portal field | Proposed value |
+| Portal field | Submitted value |
 | --- | --- |
 | Repository | `https://github.com/mchl-schrdng/antipode-audio` |
 | Plugin path | Empty: `.claude-plugin/plugin.json` is at the repository root |
-| Branch or tag | Release tag [v0.1.2](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.2); revalidate the final revision before submission |
+| Source revision | Commit `ad2a6a3`, also tagged [v0.1.2](https://github.com/mchl-schrdng/antipode-audio/releases/tag/v0.1.2) |
 | Name / display name | `antipode` / Antipode |
 | Version | `0.1.2` |
+| Surface | Claude Code only |
+| Automatic publication | Disabled |
 | Listing, links and examples | [Shared distribution kit](README.md) and repository README |
 | Icon | Bundled square SVG, declared in the Claude manifest |
 
@@ -63,9 +64,10 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
   [directory policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy)
   excludes certain AI audio-model software. This distinction should be presented
   transparently for Anthropic to assess; it is not a claimed policy clearance.
-- The portal recorded four policy holds for human review of pinned dependencies,
+- Earlier portal validation at `ad98569` passed with zero blocking findings,
+  eight warnings and four policy holds for human review of pinned dependencies,
   bundled WAV demos, Python code and local MCP execution. These remain review
-  items even though there are no blocking validation findings. Claude's
+  items; submission does not establish approval. Claude's
   [pre-submission checklist](https://claude.com/docs/plugins/pre-submission-checklist)
   flags these execution/file categories for reviewer inspection. Local strict
   validation is not proof of directory acceptance. Keep the source and downloads
@@ -82,15 +84,14 @@ tools in Claude.ai chat or Cowork without separate compatible-surface evidence.
   documented; no legal opinion, exclusivity guarantee or platform certification
   is supplied.
 
-## Remaining portal work
+## Review status
 
-Revalidate the final v0.1.2 revision after the approved brand assets and release
-metadata are included. Review the remaining findings and confirm the completed
-contact, data-handling and audience answers. The publisher must then confirm the
-legal acknowledgements and send the submission.
-Review the [directory terms](https://support.claude.com/en/articles/13145338-anthropic-software-directory-terms)
-and policy before accepting the portal acknowledgements. No terms acceptance,
-submission identifier, approval or listing URL is recorded by this dossier.
+Submission is confirmed and the security scan is in progress. Await its result
+and any subsequent human-review requests. No approval or public listing is
+recorded. Automatic publication remains disabled.
+
+The v0.1.2 release files remain fixed to their release commit. This status update
+on `main` does not replace those published assets.
 
 Use the verification record's actual limits: native Claude Code connection and
 strict manifests were checked; a complete logged-in creative conversation across
