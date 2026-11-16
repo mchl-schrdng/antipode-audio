@@ -1,0 +1,12 @@
+Antipode
+Copyright 2026 Antipode contributors
+
+Original software, documentation and vector artwork are licensed under Apache-2.0.
+The bundled procedural sound examples and their JSON recipes are offered under
+CC0-1.0, to the extent the contributors hold rights in them. See examples/LICENSE.
+
+Dependencies retain their own licenses. See THIRD_PARTY_NOTICES.md and the license
+files shipped in the installed distributions. No trademark rights are granted.
+
+Antipode is an independent project and is not affiliated with OpenAI, Anthropic,
+Google, OpenCode, Antipodes Audio, or Aion FX.
