@@ -1,0 +1,74 @@
+{
+  "duration": 10,
+  "seed": 731,
+  "peak_db": -3,
+  "layers": [
+    {
+      "preset": "drone",
+      "duration": 9.3,
+      "frequency": 55,
+      "level_db": -6,
+      "fade_in": 1.4,
+      "fade_out": 2.5
+    },
+    {
+      "preset": "pad",
+      "start": 0.3,
+      "duration": 8.8,
+      "frequency": 82.407,
+      "level_db": -16,
+      "pan": -0.55,
+      "fade_in": 1.8,
+      "fade_out": 2.2
+    },
+    {
+      "preset": "pad",
+      "start": 1,
+      "duration": 8.2,
+      "frequency": 110,
+      "level_db": -18,
+      "pan": 0.55,
+      "fade_in": 2,
+      "fade_out": 2
+    },
+    {
+      "preset": "glass",
+      "start": 2.1,
+      "duration": 4.4,
+      "frequency": 415.3,
+      "level_db": -23,
+      "pan": 0.7,
+      "fade_in": 0.08,
+      "fade_out": 1.5
+    },
+    {
+      "preset": "metal",
+      "start": 4.8,
+      "duration": 3.5,
+      "frequency": 78,
+      "level_db": -23,
+      "pan": -0.65,
+      "fade_in": 0.04,
+      "fade_out": 1.2
+    },
+    {
+      "preset": "wind",
+      "duration": 9.8,
+      "frequency": 190,
+      "level_db": -24,
+      "pan": 0.2,
+      "fade_in": 2,
+      "fade_out": 2
+    }
+  ],
+  "effects": {
+    "highpass_hz": 28,
+    "lowpass_hz": 6000,
+    "drive": 1.2,
+    "delay_seconds": 0.45,
+    "delay_feedback": 0.4,
+    "delay_mix": 0.12,
+    "reverb_seconds": 2.8,
+    "reverb_mix": 0.4
+  }
+}

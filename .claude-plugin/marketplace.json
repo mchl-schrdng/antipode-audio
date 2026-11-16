@@ -1,0 +1,8 @@
+{
+  "name": "antipode-local",
+  "metadata": { "description": "Original sound design tools for coding agents." },
+  "owner": { "name": "Antipode contributors" },
+  "plugins": [
+    { "name": "antipode", "source": "./", "description": "Original sound design, locally." }
+  ]
+}

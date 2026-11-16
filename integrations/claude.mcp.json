@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "antipode": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--locked",
+        "${CLAUDE_PLUGIN_ROOT}/scripts/claude_mcp.py",
+        "--workspace",
+        "~/.antipode/audio"
+      ]
+    }
+  }
+}
