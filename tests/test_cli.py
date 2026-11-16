@@ -15,10 +15,10 @@ class CliTests(unittest.TestCase):
             def run(*args):
                 return subprocess.run(command + list(args), text=True, capture_output=True, timeout=20)
 
-            generated = run("generate", "chime.wav", "--duration", "0.1")
+            generated = run("generate", "chime.wav", "--duration", "0.1", "--note", "A4")
             self.assertEqual(generated.returncode, 0, generated.stderr)
             self.assertEqual(json.loads(generated.stdout)["frames"], 4800)
-            processed = run("process", "chime.wav", "quiet.wav", "--gain-db", "-6")
+            processed = run("process", "chime.wav", "quiet.wav", "--gain-db", "-6", "--lowpass-hz", "4000")
             self.assertEqual(processed.returncode, 0, processed.stderr)
             self.assertAlmostEqual(json.loads(processed.stdout)["peak_dbfs"], -18, delta=0.02)
             duplicate = run("generate", "chime.wav")

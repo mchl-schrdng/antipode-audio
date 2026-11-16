@@ -12,15 +12,41 @@ import wave
 
 import numpy as np
 
-from antipode.synthesis import PRESETS, SAMPLE_RATE, effects, fade as _fade, synthesize
+from antipode.synthesis import PRESETS, SAMPLE_RATE, effects, fade as _fade, spectral_filter, synthesize
 
 MAX_DURATION = 30
 Preset = Literal["tone", "chime", "kick", "noise", "sweep", "drone", "pad", "metal", "riser", "pulse", "glass", "wind"]
+_NOTES = {"C": -9, "D": -7, "E": -5, "F": -4, "G": -2, "A": 0, "B": 2}
 
 
 def _bounded(name: str, value: float, minimum: float, maximum: float) -> None:
     if type(value) not in (int, float) or not minimum <= value <= maximum:
         raise ValueError(f"{name} must be finite and between {minimum} and {maximum}.")
+
+
+def _note_hz(note: str) -> float:
+    if not isinstance(note, str) or not 2 <= len(note) <= 3 or note[0].upper() not in _NOTES or note[-1] not in "012345678":
+        raise ValueError("note must be C0–B8 with optional # or b (for example, A4, F#3, Eb2).")
+    semitones = _NOTES[note[0].upper()] + (int(note[-1]) - 4) * 12
+    if len(note) == 3:
+        if note[1] not in ("#", "b"):
+            raise ValueError("note accidental must be # or b.")
+        semitones += 1 if note[1] == "#" else -1
+    frequency = 440.0 * 2 ** (semitones / 12)
+    _bounded("note frequency", frequency, 20, 8_000)
+    return frequency
+
+
+def _pitch(source: dict, hz_key: str, note_key: str, default: float | None = None) -> float | None:
+    if hz_key in source and note_key in source:
+        raise ValueError(f"Specify either {hz_key} or {note_key}, not both.")
+    if note_key in source:
+        return _note_hz(source[note_key])
+    if hz_key in source or default is not None:
+        value = source.get(hz_key, default)
+        _bounded(hz_key, value, 20, 8_000)
+        return value
+    return None
 
 
 def _db(value: float) -> float | None:
@@ -99,10 +125,11 @@ class AudioEngine:
         frequency: float = 660.0,
         level_db: float = -12.0,
         seed: int = 0,
+        note: str | None = None,
     ) -> dict[str, object]:
         """Create a 48 kHz mono PCM16 WAV. Output is a new relative workspace path.
 
-        Duration: 0.02–30 seconds. Frequency: 20–8000 Hz (ignored for noise).
+        Duration: 0.02–30 seconds. Frequency: 20–8000 Hz or note C0–B8 (ignored for noise).
         Level_db: peak target from -60 to -1 dBFS. Seed: 0–4294967295, used for noise.
         Returns measured file metadata; never overwrites an existing file.
         """
@@ -111,6 +138,8 @@ class AudioEngine:
             raise ValueError(f"Unknown preset. Choose from: {', '.join(PRESETS)}.")
         _bounded("duration", duration, 0.02, MAX_DURATION)
         _bounded("frequency", frequency, 20, 8_000)
+        if note is not None:
+            frequency = _note_hz(note)
         _bounded("level_db", level_db, -60, -1)
         if type(seed) is not int or not 0 <= seed <= 2**32 - 1:
             raise ValueError("seed must be an integer between 0 and 4294967295.")
@@ -122,14 +151,15 @@ class AudioEngine:
 
         Recipe requires duration (0.02–30 seconds) and layers (1–16 objects).
         Optional seed (0–4294967295), peak_db (-60 to -1, default -3), effects object.
-        Each layer requires preset and duration; optional start, frequency (20–8000),
-        level_db (-60 to 0), pan (-1 left to 1 right), fade_in/fade_out seconds, seed.
+        Each layer requires preset and duration; optional start, frequency (20–8000) or
+        note (C0–B8), frequency_end or note_end, level_db (-60 to 0), pan/pan_end (-1 left
+        to 1 right), fade_in/fade_out seconds, highpass_hz/lowpass_hz, seed.
         Effects: highpass_hz (0–10000, default0), lowpass_hz (20–20000, default20000),
         drive (1–12, default1), delay_seconds (.01–2, default.375), delay_feedback
         (0–.85, default.35), delay_mix (0–1, default0), reverb_seconds (.1–5,
         default1.8), reverb_mix (0–1, default0). Duration includes effect tails.
         Example: {"duration": 4, "layers": [{"preset": "drone", "duration": 3,
-        "frequency": 55}], "effects": {"reverb_mix": 0.3}}.
+        "note": "A1"}], "effects": {"reverb_mix": 0.3}}.
         Unknown fields are rejected. This synthesizes original oscillators/noise;
         it does not load recordings, models, or URLs. Existing files are preserved.
         """
@@ -166,25 +196,38 @@ class AudioEngine:
             raise ValueError("highpass_hz must be below lowpass_hz.")
         prepared = []
         frames = round(duration * SAMPLE_RATE)
+        layer_keys = {
+            "preset", "start", "duration", "frequency", "note", "frequency_end", "note_end",
+            "level_db", "pan", "pan_end", "fade_in", "fade_out", "highpass_hz", "lowpass_hz", "seed",
+        }
         for index, layer in enumerate(layers):
-            fields(layer, {"preset", "start", "duration", "frequency", "level_db", "pan", "fade_in", "fade_out", "seed"}, "layer")
+            fields(layer, layer_keys, "layer")
             preset = layer.get("preset")
             if not isinstance(preset, str) or preset not in PRESETS:
                 raise ValueError(f"Unknown layer preset. Choose from: {', '.join(PRESETS)}.")
             length = layer.get("duration")
             _bounded("layer duration", length, 0.02, duration)
+            pan = layer.get("pan", 0)
             values = {
                 "start": layer.get("start", 0), "duration": length,
-                "frequency": layer.get("frequency", 220), "level_db": layer.get("level_db", -12),
-                "pan": layer.get("pan", 0), "fade_in": layer.get("fade_in", min(0.005, length / 4)),
+                "frequency": _pitch(layer, "frequency", "note", 220),
+                "frequency_end": _pitch(layer, "frequency_end", "note_end"),
+                "level_db": layer.get("level_db", -12),
+                "pan": pan, "pan_end": layer.get("pan_end", pan),
+                "fade_in": layer.get("fade_in", min(0.005, length / 4)),
                 "fade_out": layer.get("fade_out", min(0.02, length / 4)),
+                "highpass_hz": layer.get("highpass_hz", 0),
+                "lowpass_hz": layer.get("lowpass_hz", 20000),
                 "seed": layer.get("seed", (seed + index) % 2**32), "preset": preset,
             }
             for key, limits in {
-                "start": (0, duration), "frequency": (20, 8000), "level_db": (-60, 0),
-                "pan": (-1, 1), "fade_in": (0, length), "fade_out": (0, length),
+                "start": (0, duration), "level_db": (-60, 0),
+                "pan": (-1, 1), "pan_end": (-1, 1), "fade_in": (0, length), "fade_out": (0, length),
+                "highpass_hz": (0, 10000), "lowpass_hz": (20, 20000),
             }.items():
                 _bounded(key, values[key], *limits)
+            if values["highpass_hz"] >= values["lowpass_hz"]:
+                raise ValueError("highpass_hz must be below lowpass_hz.")
             seed_value(values["seed"])
             layer_frames = round(length * SAMPLE_RATE)
             if round(values["start"] * SAMPLE_RATE) + layer_frames > frames:
@@ -194,10 +237,19 @@ class AudioEngine:
             prepared.append(values)
         mix = np.zeros((frames, 2))
         for layer in prepared:
-            voice = synthesize(layer["preset"], layer["duration"], layer["frequency"], layer["seed"])
+            voice = synthesize(
+                layer["preset"], layer["duration"], layer["frequency"], layer["seed"], layer["frequency_end"]
+            )
+            if layer["highpass_hz"] or layer["lowpass_hz"] != 20000:
+                voice = spectral_filter(voice, layer["highpass_hz"], layer["lowpass_hz"])
             _fade(voice, SAMPLE_RATE, layer["fade_in"], layer["fade_out"])
-            angle = (layer["pan"] + 1) * np.pi / 4
-            stereo = voice * np.array([np.cos(angle), np.sin(angle)]) * 10 ** (layer["level_db"] / 20)
+            if layer["pan"] == layer["pan_end"]:
+                angle = (layer["pan"] + 1) * np.pi / 4
+                pan_weights = np.array([np.cos(angle), np.sin(angle)])
+            else:
+                angle = (np.linspace(layer["pan"], layer["pan_end"], len(voice))[:, None] + 1) * (np.pi / 4)
+                pan_weights = np.hstack([np.cos(angle), np.sin(angle)])
+            stereo = voice * pan_weights * 10 ** (layer["level_db"] / 20)
             start = round(layer["start"] * SAMPLE_RATE)
             mix[start:start + len(voice)] += stereo
         mix = effects(mix, options, seed)
@@ -217,17 +269,24 @@ class AudioEngine:
         fade_out: float = 0.0,
         reverse: bool = False,
         normalize_db: float | None = None,
+        highpass_hz: float = 0.0,
+        lowpass_hz: float = 20000.0,
     ) -> dict[str, object]:
         """Process a PCM16 WAV into a new relative workspace path; keep rate and channels.
 
-        Order: reverse, gain (-60 to 24 dB), fades in seconds, optional peak normalization
-        (-60 to -1 dBFS). Fades must fit within the file. Clipping is rejected.
+        Order: reverse, spectral filter (highpass_hz 0–10000, lowpass_hz 20–20000),
+        gain (-60 to 24 dB), fades in seconds, optional peak normalization (-60 to -1 dBFS).
+        Fades must fit within the file. Clipping is rejected.
         Source is preserved; output is never overwritten. Silence stays silent.
         """
         self._path(output)
         _bounded("gain_db", gain_db, -60, 24)
         _bounded("fade_in", fade_in, 0, MAX_DURATION)
         _bounded("fade_out", fade_out, 0, MAX_DURATION)
+        _bounded("highpass_hz", highpass_hz, 0, 10000)
+        _bounded("lowpass_hz", lowpass_hz, 20, 20000)
+        if highpass_hz >= lowpass_hz:
+            raise ValueError("highpass_hz must be below lowpass_hz.")
         if normalize_db is not None:
             _bounded("normalize_db", normalize_db, -60, -1)
         samples, rate = self._read(source)
@@ -235,6 +294,8 @@ class AudioEngine:
             raise ValueError("Combined fades must not exceed the audio duration.")
         if reverse:
             samples = samples[::-1].copy()
+        if highpass_hz or lowpass_hz != 20000:
+            samples = spectral_filter(samples, highpass_hz, lowpass_hz, rate)
         samples *= 10 ** (gain_db / 20)
         _fade(samples, rate, fade_in, fade_out)
         peak = float(np.max(np.abs(samples)))
@@ -243,17 +304,31 @@ class AudioEngine:
         return self._write(output, samples, rate)
 
     def analyze_audio(self, source: str) -> dict[str, object]:
-        """Measure a workspace PCM16 WAV: duration, rate, channels, peak/RMS dBFS and
-        full-scale sample count. Null dBFS means silence. RMS is not LUFS or true peak.
+        """Measure a workspace PCM16 WAV: duration, rate, channels, peak/RMS dBFS,
+        peak time, spectral centroid, stereo balance and full-scale sample count.
+        Null dBFS/metrics mean silence. RMS is not LUFS or true peak.
         """
         samples, rate = self._read(source)
+        peak = float(np.max(np.abs(samples)))
+        power = np.sum(np.abs(np.fft.rfft(samples, axis=0)) ** 2, axis=1)
+        total_power = float(np.sum(power))
+        frequencies = np.fft.rfftfreq(len(samples), 1 / rate)
+        channel_rms = np.sqrt(np.mean(samples**2, axis=0))
+        rms_sum = float(np.sum(channel_rms))
         return {
             "path": str(self._path(source)),
             "duration_seconds": len(samples) / rate,
             "sample_rate": rate,
             "channels": samples.shape[1],
             "frames": len(samples),
-            "peak_dbfs": _db(float(np.max(np.abs(samples)))),
+            "peak_dbfs": _db(peak),
             "rms_dbfs": _db(float(np.sqrt(np.mean(samples**2)))),
+            "peak_time_seconds": round(int(np.argmax(np.max(np.abs(samples), axis=1))) / rate, 4) if peak else None,
+            "spectral_centroid_hz": round(float(np.sum(frequencies * power) / total_power), 1) if total_power else None,
+            "stereo_balance": (
+                round(float((channel_rms[1] - channel_rms[0]) / rms_sum), 3)
+                if samples.shape[1] == 2 and rms_sum
+                else (0.0 if peak else None)
+            ),
             "full_scale_samples": int(np.count_nonzero((samples <= -1) | (samples >= 32767 / 32768))),
         }

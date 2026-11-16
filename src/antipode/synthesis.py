@@ -30,15 +30,22 @@ def fade(samples: np.ndarray, rate: int, fade_in: float, fade_out: float) -> Non
                 samples[:count] *= ramp
 
 
-def synthesize(preset: str, duration: float, frequency: float, seed: int) -> np.ndarray:
+def synthesize(
+    preset: str, duration: float, frequency: float, seed: int, frequency_end: float | None = None
+) -> np.ndarray:
     """Return a peak-normalized mono voice. Caller validates the public parameters."""
     time = np.arange(round(duration * SAMPLE_RATE)) / SAMPLE_RATE
     position = time / duration
-    phase = 2 * np.pi * frequency * time
+    end_frequency = frequency if frequency_end is None else frequency_end
+    phase = (
+        2 * np.pi * frequency * time
+        if end_frequency == frequency
+        else 2 * np.pi * (frequency * time + 0.5 * (end_frequency - frequency) * position * time)
+    )
     random = np.random.default_rng(seed)
 
     def partial(ratio: float, offset: float = 0) -> np.ndarray:
-        if frequency * ratio >= SAMPLE_RATE * 0.45:
+        if max(frequency, end_frequency) * ratio >= SAMPLE_RATE * 0.45:
             return np.zeros_like(time)
         return np.sin(phase * ratio + offset)
 
@@ -58,7 +65,11 @@ def synthesize(preset: str, duration: float, frequency: float, seed: int) -> np.
     elif preset == "noise":
         signal = random.uniform(-1, 1, len(time))
     elif preset == "sweep":
-        signal = np.sin(2 * np.pi * (frequency / 2 * time + frequency / (4 * duration) * time**2))
+        signal = (
+            np.sin(phase)
+            if frequency_end is not None
+            else np.sin(2 * np.pi * (frequency / 2 * time + frequency / (4 * duration) * time**2))
+        )
     elif preset == "drone":
         signal = 0.65 * partial(0.5) + 0.3 * np.sin(phase + 0.7 * np.sin(2 * np.pi * 0.13 * time))
         for ratio, amplitude in ((1.003, 0.22), (1.5, 0.15), (2.002, 0.08), (3, 0.04)):
@@ -85,13 +96,19 @@ def synthesize(preset: str, duration: float, frequency: float, seed: int) -> np.
         if preset == "metal":
             signal += random.uniform(-1, 1, len(time)) * np.exp(-100 * time) * 0.12
     elif preset == "riser":
-        sweep_phase = 2 * np.pi * frequency * duration * (0.125 * position + 0.875 / 3 * position**3)
+        sweep_phase = (
+            2 * np.pi * duration * (frequency * position + (end_frequency - frequency) / 3 * position**3)
+            if frequency_end is not None
+            else 2 * np.pi * frequency * duration * (0.125 * position + 0.875 / 3 * position**3)
+        )
         air = random.uniform(-1, 1, len(time))
         air = spectral_filter(air[:, None], 500, 9000)[:, 0]
         signal = (0.55 * np.sin(sweep_phase) + 0.3 * np.sin(1.003 * sweep_phase) + 0.45 * air)
         signal *= position**1.5
     elif preset == "wind":
-        signal = spectral_filter(random.uniform(-1, 1, len(time))[:, None], 40, min(12000, frequency * 4))[:, 0]
+        signal = spectral_filter(
+            random.uniform(-1, 1, len(time))[:, None], 40, min(12000, max(frequency, end_frequency) * 4)
+        )[:, 0]
         signal *= (0.65 + 0.35 * np.sin(2 * np.pi * 0.21 * time)) * np.sin(np.pi * position)**0.6
     else:
         raise ValueError(f"Unknown preset: {preset}.")
@@ -101,10 +118,10 @@ def synthesize(preset: str, duration: float, frequency: float, seed: int) -> np.
     return samples / peak if peak else samples
 
 
-def spectral_filter(samples: np.ndarray, highpass: float, lowpass: float) -> np.ndarray:
+def spectral_filter(samples: np.ndarray, highpass: float, lowpass: float, rate: int = SAMPLE_RATE) -> np.ndarray:
     """Smooth spectral roll-off; padding prevents an end transient wrapping to the start."""
     size = 1 << (2 * len(samples) - 1).bit_length()
-    frequencies = np.fft.rfftfreq(size, 1 / SAMPLE_RATE)
+    frequencies = np.fft.rfftfreq(size, 1 / rate)
     response = 1 / np.sqrt(1 + (frequencies / lowpass)**8)
     if highpass:
         response *= frequencies**2 / np.sqrt(frequencies**4 + highpass**4)

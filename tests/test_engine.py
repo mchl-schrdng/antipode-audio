@@ -31,10 +31,19 @@ class EngineTests(unittest.TestCase):
                 self.assertEqual(result["full_scale_samples"], 0)
 
     def test_tone_frequency_and_seeded_noise_are_reproducible(self):
-        self.engine.generate_sound("tone.wav", preset="tone", duration=1, frequency=440)
+        report = self.engine.generate_sound("tone.wav", preset="tone", duration=1, frequency=440)
+        by_note = self.engine.generate_sound("note-a4.wav", preset="tone", duration=1, note="A4")
+        self.assertEqual((self.engine.workspace / "tone.wav").read_bytes(), (self.engine.workspace / "note-a4.wav").read_bytes())
+        self.assertAlmostEqual(report["spectral_centroid_hz"], 440.0, delta=0.5)
+        self.assertEqual(report["stereo_balance"], 0.0)
+        self.assertGreater(report["peak_time_seconds"], 0)
+        self.engine.generate_sound("note-fsharp3.wav", preset="tone", duration=1, note="F#3")
         samples, rate = self.engine._read("tone.wav")
         frequency = np.fft.rfftfreq(len(samples), 1 / rate)[np.argmax(np.abs(np.fft.rfft(samples[:, 0])))]
         self.assertEqual(frequency, 440)
+        fsharp_samples, _ = self.engine._read("note-fsharp3.wav")
+        fsharp_hz = np.fft.rfftfreq(len(fsharp_samples), 1 / rate)[np.argmax(np.abs(np.fft.rfft(fsharp_samples[:, 0])))]
+        self.assertEqual(fsharp_hz, 185)
         for name, seed in (("a", 42), ("b", 42), ("c", 43)):
             self.engine.generate_sound(name + ".wav", preset="noise", duration=0.02, seed=seed)
         self.assertEqual((self.engine.workspace / "a.wav").read_bytes(), (self.engine.workspace / "b.wav").read_bytes())
@@ -42,7 +51,8 @@ class EngineTests(unittest.TestCase):
 
     def test_invalid_generation_creates_no_files(self):
         for options in ({"duration": float("nan")}, {"frequency": float("inf")}, {"duration": 31},
-                        {"seed": True}, {"seed": -1}, {"level_db": 0}, {"preset": "missing"}):
+                        {"seed": True}, {"seed": -1}, {"level_db": 0}, {"preset": "missing"},
+                        {"note": "H4"}, {"note": "C0"}, {"note": "C9"}, {"note": "A$4"}, {"note": 440}):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 self.engine.generate_sound("bad.wav", **options)
         self.assertEqual(list(self.engine.workspace.iterdir()), [])
@@ -109,6 +119,15 @@ class EngineTests(unittest.TestCase):
         report = self.engine.process_audio("silent.wav", "silent-normalized.wav", normalize_db=-1)
         self.assertIsNone(report["rms_dbfs"])
         self.assertIsNone(report["peak_dbfs"])
+        self.assertIsNone(report["peak_time_seconds"])
+        self.assertIsNone(report["spectral_centroid_hz"])
+        self.assertIsNone(report["stereo_balance"])
+        self.engine.generate_sound("bright-noise.wav", preset="noise", duration=0.2, seed=7)
+        unfiltered = self.engine.analyze_audio("bright-noise.wav")
+        filtered = self.engine.process_audio("bright-noise.wav", "dark-noise.wav", lowpass_hz=800, normalize_db=-6)
+        self.assertLess(filtered["spectral_centroid_hz"], unfiltered["spectral_centroid_hz"] * 0.25)
+        with self.assertRaises(ValueError):
+            self.engine.process_audio("bright-noise.wav", "bad-filter.wav", highpass_hz=2000, lowpass_hz=1000)
 
     def test_truncated_and_unsupported_wav_are_rejected(self):
         self.engine.generate_sound("cut.wav", duration=0.02)

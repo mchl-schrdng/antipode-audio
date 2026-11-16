@@ -28,7 +28,37 @@ class CompositionTests(unittest.TestCase):
         self.assertTrue(np.all(samples[:, 1] == 0))
         self.assertGreater(np.max(np.abs(samples[:, 0])), 0.7)
         self.assertEqual(result["peak_dbfs"], -3)
+        self.assertEqual(result["stereo_balance"], -1.0)
         self.assertEqual(result["full_scale_samples"], 0)
+
+    def test_layer_notes_glides_pan_motion_and_filtering(self):
+        moving = {
+            "duration": 0.5,
+            "layers": [{
+                "preset": "tone", "duration": 0.4, "note": "A3", "note_end": "A5",
+                "pan": -1, "pan_end": 1, "lowpass_hz": 2000,
+            }],
+        }
+        report = self.engine.render_recipe(moving, "moving.wav")
+        samples, rate = self.engine._read("moving.wav")
+        active = samples[:19200]
+        self.assertAlmostEqual(report["stereo_balance"], 0.0, delta=0.03)
+        first_half = active[:len(active) // 2]
+        second_half = active[len(active) // 2:]
+        self.assertGreater(np.sum(first_half[:, 0] ** 2), np.sum(first_half[:, 1] ** 2) * 3)
+        self.assertGreater(np.sum(second_half[:, 1] ** 2), np.sum(second_half[:, 0] ** 2) * 3)
+        freqs = np.fft.rfftfreq(len(first_half), 1 / rate)
+        early_power = np.sum(np.abs(np.fft.rfft(first_half, axis=0)) ** 2, axis=1)
+        late_power = np.sum(np.abs(np.fft.rfft(second_half, axis=0)) ** 2, axis=1)
+        early_hz = float(np.sum(freqs * early_power) / np.sum(early_power))
+        late_hz = float(np.sum(freqs * late_power) / np.sum(late_power))
+        self.assertAlmostEqual(early_hz, 385, delta=15)
+        self.assertAlmostEqual(late_hz, 705, delta=15)
+        raw_noise = self.engine.render_recipe({"duration": 0.2, "layers": [{"preset": "noise", "duration": 0.2}]}, "raw.wav")
+        dark_noise = self.engine.render_recipe(
+            {"duration": 0.2, "layers": [{"preset": "noise", "duration": 0.2, "lowpass_hz": 600}]}, "dark.wav"
+        )
+        self.assertLess(dark_noise["spectral_centroid_hz"], raw_noise["spectral_centroid_hz"] * 0.2)
 
     def test_effects_are_deterministic_and_extend_sound_into_tail(self):
         self.recipe["effects"] = {"highpass_hz": 80, "lowpass_hz": 4000, "drive": 2,
@@ -54,7 +84,9 @@ class CompositionTests(unittest.TestCase):
                        {**self.recipe, "effects": {"reverb_seconds": float("inf")}},
                        {**self.recipe, "effects": {"highpass_hz": 4000, "lowpass_hz": 2000}},
                        {**self.recipe, "effects": {"missing": 1}}]
-        for patch in ({"start": 0.3}, {"pan": 2}, {"frequency": "440"}, {"seed": -1},
+        for patch in ({"start": 0.3}, {"pan": 2}, {"pan_end": -1.5}, {"frequency": "440"}, {"seed": -1},
+                      {"note": "H2"}, {"frequency": 440, "note": "A4"}, {"frequency_end": 880, "note_end": "A5"},
+                      {"highpass_hz": 3000, "lowpass_hz": 1000},
                       {"preset": "unknown"}, {"fade_in": 0.2, "fade_out": 0.2}, {"source": "file.wav"}):
             bad_recipes.append({**self.recipe, "layers": [{**self.recipe["layers"][0], **patch}]})
         for recipe in bad_recipes:
