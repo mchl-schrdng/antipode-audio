@@ -35,20 +35,42 @@ class McpTests(unittest.IsolatedAsyncioTestCase):
                         {"output": "../escape.wav"},
                         {"output": "invalid.wav", "duration": -1},
                         {"output": "unknown.wav", "preset": "not-a-preset"},
+                        {"output": "both.wav", "frequency": 440, "note": "A4"},
+                        {"output": "low-note.wav", "note": "C0"},
                     ):
                         failure = await client.call_tool("generate_sound", invalid)
                         self.assertTrue(failure.is_error, failure)
                     self.assertEqual((Path(directory) / "mcp.wav").read_bytes(), original)
+                    by_note = await client.call_tool("generate_sound", {"output": "note.wav", "preset": "tone", "duration": 0.2, "note": "A4"})
+                    self.assertFalse(by_note.is_error, by_note.content)
+                    self.assertAlmostEqual(by_note.structured_content["spectral_centroid_hz"], 440.0, delta=2.0)
                     rendered = await client.call_tool("render_recipe", {
                         "output": "layered.wav",
-                        "recipe": {"duration": 0.3, "layers": [{"preset": "tone", "duration": 0.1}]},
+                        "recipe": {
+                            "duration": 0.3,
+                            "layers": [{
+                                "preset": "tone", "duration": 0.2, "note": "A3", "note_end": "A4",
+                                "pan": -0.5, "pan_end": 0.5, "lowpass_hz": 2000,
+                            }],
+                        },
                     })
                     self.assertFalse(rendered.is_error, rendered.content)
                     self.assertEqual(rendered.structured_content["channels"], 2)
+                    bad_glide = await client.call_tool("render_recipe", {
+                        "output": "bad-glide.wav",
+                        "recipe": {"duration": 0.3, "layers": [{"preset": "kick", "duration": 0.2, "note_end": "A2"}]},
+                    })
+                    self.assertTrue(bad_glide.is_error, bad_glide)
                     analyzed = await client.call_tool("analyze_audio", {"source": "layered.wav"})
                     self.assertFalse(analyzed.is_error)
                     self.assertEqual(analyzed.structured_content["full_scale_samples"], 0)
-                    process = await client.call_tool("process_audio", {"source": "mcp.wav", "output": "reversed.wav", "reverse": True})
+                    self.assertIsNotNone(analyzed.structured_content["peak_time_seconds"])
+                    self.assertIsNotNone(analyzed.structured_content["spectral_centroid_hz"])
+                    self.assertIsNotNone(analyzed.structured_content["stereo_balance"])
+                    process = await client.call_tool(
+                        "process_audio",
+                        {"source": "mcp.wav", "output": "reversed.wav", "reverse": True, "lowpass_hz": 2000},
+                    )
                     self.assertFalse(process.is_error, process.content)
                     for tool in catalog.tools:
                         self.assertTrue(tool.annotations.title)

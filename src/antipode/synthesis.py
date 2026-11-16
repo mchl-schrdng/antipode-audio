@@ -37,10 +37,11 @@ def synthesize(
     time = np.arange(round(duration * SAMPLE_RATE)) / SAMPLE_RATE
     position = time / duration
     end_frequency = frequency if frequency_end is None else frequency_end
+    glide_ratio = end_frequency / frequency
     phase = (
         2 * np.pi * frequency * time
         if end_frequency == frequency
-        else 2 * np.pi * (frequency * time + 0.5 * (end_frequency - frequency) * position * time)
+        else 2 * np.pi * frequency * duration * (glide_ratio**position - 1) / np.log(glide_ratio)
     )
     random = np.random.default_rng(seed)
 
@@ -106,9 +107,7 @@ def synthesize(
         signal = (0.55 * np.sin(sweep_phase) + 0.3 * np.sin(1.003 * sweep_phase) + 0.45 * air)
         signal *= position**1.5
     elif preset == "wind":
-        signal = spectral_filter(
-            random.uniform(-1, 1, len(time))[:, None], 40, min(12000, max(frequency, end_frequency) * 4)
-        )[:, 0]
+        signal = spectral_filter(random.uniform(-1, 1, len(time))[:, None], 40, min(12000, frequency * 4))[:, 0]
         signal *= (0.65 + 0.35 * np.sin(2 * np.pi * 0.21 * time)) * np.sin(np.pi * position)**0.6
     else:
         raise ValueError(f"Unknown preset: {preset}.")

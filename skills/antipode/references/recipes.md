@@ -29,12 +29,12 @@ Each layer uses a `preset` from `list_presets`: `tone`, `chime`, `kick`, `noise`
 | --- | --- |
 | `start` | Seconds, at least 0; default 0 |
 | `duration` | At least 0.02 seconds; must fit the recipe |
-| `frequency` / `note` | 20–8000 Hz or scientific pitch `C0`–`B8` (for example `A2`, `F#4`, `Eb3`); default 220 Hz |
-| `frequency_end` / `note_end` | Optional ending pitch for linear pitch glides |
-| `level_db` | -60 to 0; default -12 |
+| `frequency` / `note` | 20–8000 Hz or scientific pitch `E0`–`B8` (for example `A2`, `F#4`, `Eb3`); default 220 Hz; specify one |
+| `frequency_end` / `note_end` | Optional ending pitch for exponential (log-frequency) glides; not supported on `kick`, `noise`, or `wind` |
+| `level_db` | -60 to 0; default -12 (applied after layer filtering and re-normalization) |
 | `pan`, `pan_end` | -1 left, 0 center, 1 right; `pan` defaults to 0, `pan_end` defaults to `pan` |
 | `fade_in`, `fade_out` | Seconds; defaults 0.005 / 0.02, fitted to the layer |
-| `highpass_hz`, `lowpass_hz` | Optional per-layer filter (0–10000 Hz and 20–20000 Hz; defaults 0 and 20000) |
+| `highpass_hz`, `lowpass_hz` | Optional per-layer filter (0–10000 Hz and 20–20000 Hz; defaults 0 and 20000; filters that extinguish the voice are rejected) |
 | `seed` | Optional integer override |
 
 | Effect field | Range / default |

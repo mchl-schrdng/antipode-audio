@@ -52,13 +52,31 @@ class CompositionTests(unittest.TestCase):
         late_power = np.sum(np.abs(np.fft.rfft(second_half, axis=0)) ** 2, axis=1)
         early_hz = float(np.sum(freqs * early_power) / np.sum(early_power))
         late_hz = float(np.sum(freqs * late_power) / np.sum(late_power))
-        self.assertAlmostEqual(early_hz, 385, delta=15)
-        self.assertAlmostEqual(late_hz, 705, delta=15)
+        self.assertAlmostEqual(early_hz, 318, delta=15)
+        self.assertAlmostEqual(late_hz, 628, delta=15)
+        midpoint_window = np.sum(active[9600 - 480:9600 + 480], axis=1)
+        mid_freqs = np.fft.rfftfreq(len(midpoint_window), 1 / rate)
+        mid_hz = mid_freqs[np.argmax(np.abs(np.fft.rfft(midpoint_window)))]
+        self.assertAlmostEqual(mid_hz, 440, delta=30)
         raw_noise = self.engine.render_recipe({"duration": 0.2, "layers": [{"preset": "noise", "duration": 0.2}]}, "raw.wav")
         dark_noise = self.engine.render_recipe(
             {"duration": 0.2, "layers": [{"preset": "noise", "duration": 0.2, "lowpass_hz": 600}]}, "dark.wav"
         )
         self.assertLess(dark_noise["spectral_centroid_hz"], raw_noise["spectral_centroid_hz"] * 0.2)
+        balanced = self.engine.render_recipe({
+            "duration": 0.4,
+            "layers": [
+                {"preset": "tone", "duration": 0.4, "frequency": 440, "pan": -1, "level_db": -6},
+                {"preset": "drone", "duration": 0.4, "frequency": 55, "highpass_hz": 200, "pan": 1, "level_db": -6},
+            ],
+        }, "balanced-filter.wav")
+        balanced_samples, _ = self.engine._read("balanced-filter.wav")
+        self.assertGreater(balanced["spectral_centroid_hz"], 200)
+        self.assertAlmostEqual(
+            float(np.max(np.abs(balanced_samples[:, 0]))),
+            float(np.max(np.abs(balanced_samples[:, 1]))),
+            delta=0.05,
+        )
 
     def test_effects_are_deterministic_and_extend_sound_into_tail(self):
         self.recipe["effects"] = {"highpass_hz": 80, "lowpass_hz": 4000, "drive": 2,
@@ -85,8 +103,11 @@ class CompositionTests(unittest.TestCase):
                        {**self.recipe, "effects": {"highpass_hz": 4000, "lowpass_hz": 2000}},
                        {**self.recipe, "effects": {"missing": 1}}]
         for patch in ({"start": 0.3}, {"pan": 2}, {"pan_end": -1.5}, {"frequency": "440"}, {"seed": -1},
-                      {"note": "H2"}, {"frequency": 440, "note": "A4"}, {"frequency_end": 880, "note_end": "A5"},
-                      {"highpass_hz": 3000, "lowpass_hz": 1000},
+                      {"note": "H2"}, {"note": "D#0"}, {"frequency": 440, "note": "A4"},
+                      {"frequency_end": 880, "note_end": "A5"},
+                      {"preset": "kick", "note_end": "A2"}, {"preset": "noise", "frequency_end": 800},
+                      {"preset": "wind", "frequency_end": 800},
+                      {"highpass_hz": 3000, "lowpass_hz": 1000}, {"frequency": 55, "highpass_hz": 5000},
                       {"preset": "unknown"}, {"fade_in": 0.2, "fade_out": 0.2}, {"source": "file.wav"}):
             bad_recipes.append({**self.recipe, "layers": [{**self.recipe["layers"][0], **patch}]})
         for recipe in bad_recipes:

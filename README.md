@@ -124,7 +124,7 @@ MCP-plus-skill installation. Antipode exposes one shared toolset:
 | `generate_sound` | Render one source with a controlled pitch, duration and level |
 | `render_recipe` | Arrange layered stereo sound with effects |
 | `process_audio` | Refine a local WAV while preserving the source |
-| `analyze_audio` | Measure duration, sample rate, peak and RMS levels |
+| `analyze_audio` | Measure duration, sample rate, peak/RMS levels, peak time, spectral centroid and stereo balance |
 
 The client starts `antipode-mcp` as a local stdio process. No hosted MCP server,
 account, API key or always-on daemon is needed by Antipode. Use separate output

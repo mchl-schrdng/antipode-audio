@@ -15,12 +15,25 @@ class CliTests(unittest.TestCase):
             def run(*args):
                 return subprocess.run(command + list(args), text=True, capture_output=True, timeout=20)
 
-            generated = run("generate", "chime.wav", "--duration", "0.1", "--note", "A4")
+            generated = run("generate", "chime.wav", "--duration", "0.1")
             self.assertEqual(generated.returncode, 0, generated.stderr)
             self.assertEqual(json.loads(generated.stdout)["frames"], 4800)
-            processed = run("process", "chime.wav", "quiet.wav", "--gain-db", "-6", "--lowpass-hz", "4000")
+            processed = run("process", "chime.wav", "quiet.wav", "--gain-db", "-6")
             self.assertEqual(processed.returncode, 0, processed.stderr)
             self.assertAlmostEqual(json.loads(processed.stdout)["peak_dbfs"], -18, delta=0.02)
+            by_note = run("generate", "note.wav", "--preset", "tone", "--duration", "0.2", "--note", "A4")
+            self.assertEqual(by_note.returncode, 0, by_note.stderr)
+            self.assertAlmostEqual(json.loads(by_note.stdout)["spectral_centroid_hz"], 440.0, delta=2.0)
+            both_pitch = run("generate", "both.wav", "--frequency", "440", "--note", "A4")
+            self.assertEqual(both_pitch.returncode, 1)
+            self.assertIn("not both", both_pitch.stderr)
+            noise = run("generate", "noise.wav", "--preset", "noise", "--duration", "0.2")
+            filtered_noise = run("process", "noise.wav", "dark-noise.wav", "--lowpass-hz", "800")
+            self.assertEqual(filtered_noise.returncode, 0, filtered_noise.stderr)
+            self.assertLess(
+                json.loads(filtered_noise.stdout)["spectral_centroid_hz"],
+                json.loads(noise.stdout)["spectral_centroid_hz"] * 0.25,
+            )
             duplicate = run("generate", "chime.wav")
             self.assertEqual(duplicate.returncode, 1)
             self.assertEqual(duplicate.stdout, "")

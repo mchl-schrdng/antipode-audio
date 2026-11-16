@@ -52,7 +52,8 @@ class EngineTests(unittest.TestCase):
     def test_invalid_generation_creates_no_files(self):
         for options in ({"duration": float("nan")}, {"frequency": float("inf")}, {"duration": 31},
                         {"seed": True}, {"seed": -1}, {"level_db": 0}, {"preset": "missing"},
-                        {"note": "H4"}, {"note": "C0"}, {"note": "C9"}, {"note": "A$4"}, {"note": 440}):
+                        {"note": "H4"}, {"note": "C0"}, {"note": "D#0"}, {"note": "C9"}, {"note": "A$4"}, {"note": 440},
+                        {"frequency": 440, "note": "A4"}):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 self.engine.generate_sound("bad.wav", **options)
         self.assertEqual(list(self.engine.workspace.iterdir()), [])
@@ -126,6 +127,16 @@ class EngineTests(unittest.TestCase):
         unfiltered = self.engine.analyze_audio("bright-noise.wav")
         filtered = self.engine.process_audio("bright-noise.wav", "dark-noise.wav", lowpass_hz=800, normalize_db=-6)
         self.assertLess(filtered["spectral_centroid_hz"], unfiltered["spectral_centroid_hz"] * 0.25)
+        rate_22k = 22050
+        time_22k = np.arange(rate_22k // 5) / rate_22k
+        dc_and_high = 0.2 + 0.3 * np.sin(2 * np.pi * 440 * time_22k) + 0.3 * np.sin(2 * np.pi * 6000 * time_22k)
+        pcm_22k = np.rint(dc_and_high * 32768).astype("<i2")
+        with wave.open(str(self.engine.workspace / "22k.wav"), "wb") as wav:
+            wav.setparams((1, 2, rate_22k, len(pcm_22k), "NONE", "not compressed"))
+            wav.writeframes(pcm_22k.tobytes())
+        lowpassed_22k = self.engine.process_audio("22k.wav", "22k-lp.wav", lowpass_hz=1200)
+        self.assertEqual(lowpassed_22k["sample_rate"], rate_22k)
+        self.assertAlmostEqual(lowpassed_22k["spectral_centroid_hz"], 440.0, delta=15)
         with self.assertRaises(ValueError):
             self.engine.process_audio("bright-noise.wav", "bad-filter.wav", highpass_hz=2000, lowpass_hz=1000)
 
