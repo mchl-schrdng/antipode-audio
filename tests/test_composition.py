@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-import wave
 
 import numpy as np
 
@@ -125,20 +124,25 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(result["layers"], 16)
         self.assertEqual(result["full_scale_samples"], 0)
 
-    def test_demo_recipes_match_published_audio(self):
-        root = Path(__file__).resolve().parents[1]
-        for recipe_file in sorted((root / "examples/recipes").glob("*.json")):
-            with self.subTest(recipe=recipe_file.name):
-                recipe = json.loads(recipe_file.read_text())
-                report = self.engine.render_recipe(recipe, recipe_file.stem + ".wav")
-                self.assertEqual(report["channels"], 2)
-                self.assertEqual(report["full_scale_samples"], 0)
-                expected = root / "examples/audio" / (recipe_file.stem + ".wav")
-                with wave.open(str(expected), "rb") as wav:
-                    expected_samples = np.frombuffer(wav.readframes(wav.getnframes()), dtype="<i2").reshape(-1, 2) / 32768
-                    actual, _ = self.engine._read(recipe_file.stem + ".wav")
-                    # FFT libraries may differ in the final quantization bit across platforms.
-                    np.testing.assert_allclose(actual, expected_samples, atol=1 / 32768, rtol=0)
+    def test_example_recipes_match_reference_measurements(self):
+        recipes = Path(__file__).resolve().parents[1] / "examples/recipes"
+        references = {
+            "afterimage": (480000, 474.5, "fffecfb2ecdb37dcffc000fcc0000000"),
+            "event-horizon": (480000, 65.5, "fffffbf7cd7d7080020fdc0000000000"),
+            "glass-orbit": (384000, 752.2, "f944f54128a102007788000000200000"),
+        }
+        for name, (frames, centroid, envelope) in references.items():
+            with self.subTest(recipe=name):
+                recipe = json.loads((recipes / f"{name}.json").read_text())
+                result = self.engine.render_recipe(recipe, f"{name}.wav")
+                self.assertEqual((result["frames"], result["channels"], result["full_scale_samples"]), (frames, 2, 0))
+                self.assertAlmostEqual(result["spectral_centroid_hz"], centroid, delta=0.2)
+                samples, _ = self.engine._read(f"{name}.wav")
+                # Compare rises and falls in the stereo envelopes. This tolerates
+                # one-bit PCM differences between FFT implementations.
+                rms = np.sqrt(np.mean(samples.reshape(64, -1, 2) ** 2, axis=1))
+                self.assertEqual(np.packbits(np.diff(rms, axis=0) > 0).tobytes().hex(), envelope)
+
 
 if __name__ == "__main__":
     unittest.main()

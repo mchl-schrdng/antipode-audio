@@ -8,8 +8,8 @@ non-infringement in every jurisdiction.
 
 Antipode synthesizes waveforms and seeded noise using mathematical DSP. The
 repository contains no sample pack, recording scraped from the internet, model
-weights, training dataset, voice clone, or artist-specific model. The bundled
-sound studies are rendered from the included JSON recipes. The orbital logo was
+weights, training dataset, voice clone, or artist-specific model. The example JSON recipes
+render locally into the user’s audio workspace. The orbital logo was
 supplied by the project owner as an editable SVG; the bundled mark, icon and cover
 adapt its first animation frame. The site graphics remain editable vectors/code,
 and no downloaded font is required. Code and creative decisions were developed
@@ -26,7 +26,7 @@ possible user composition is legally exclusive or free of third-party rights.
 | Material | Terms |
 | --- | --- |
 | Original code, docs, site and vector artwork | [Apache-2.0](../LICENSE) |
-| Bundled example recordings and recipes | [CC0-1.0](../examples/LICENSE), only to the extent the contributors hold rights |
+| Example synthesis recipes | [CC0-1.0](../examples/LICENSE), only to the extent the contributors hold rights |
 | Python dependencies and bundled native libraries | Their own notices, listed in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) |
 | User-created output | Antipode claims no ownership or royalty and requires no attribution for the audio alone |
 | User-supplied recordings, compositions, lyrics, brands or likenesses | Rights remain the user's responsibility; processing does not grant permission |

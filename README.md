@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/mchl-schrdng/antipode-audio/actions/workflows/check.yml"><img src="https://github.com/mchl-schrdng/antipode-audio/actions/workflows/check.yml/badge.svg?branch=main" alt="CI — Linux, macOS & Windows"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-0f172a?style=flat-square" alt="Apache-2.0 License"></a>
-  <a href="examples/LICENSE"><img src="https://img.shields.io/badge/demos-CC0--1.0-0f172a?style=flat-square" alt="CC0-1.0 Demos"></a>
+  <a href="examples/LICENSE"><img src="https://img.shields.io/badge/recipes-CC0--1.0-0f172a?style=flat-square" alt="CC0-1.0 Recipes"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%20%7C%203.12-2563eb?style=flat-square" alt="Python 3.11 | 3.12"></a>
   <a href="https://antipode.quest"><img src="https://img.shields.io/badge/listening%20room-antipode.quest-10b981?style=flat-square" alt="Listening Room"></a>
 </p>
@@ -38,17 +38,23 @@ Your brief ──► Coding Agent ──► Local MCP (stdio) ──► Procedur
 
 ---
 
-## Listening Room
+## Create your first sound
 
-Three original studies synthesized entirely by the bundled engine — no external samples or recordings:
+Ask your agent for a sound, for example “a low pulse with a metallic attack that decays over half a second.” It can write a recipe and render the result into your audio workspace. To try the command line, install [uv](https://docs.astral.sh/uv/getting-started/installation/) and run the following in a new project directory.
 
-| Study | Character | Audio | Recipe |
-| :--- | :--- | :--- | :--- |
-| **Event Horizon** | Deep breathing sub-drone (`55 Hz`), detuned stereo pads, sparse glass & metallic decay | [Listen / WAV](examples/audio/event-horizon.wav) | [`event-horizon.json`](examples/recipes/event-horizon.json) |
-| **Glass Orbit** | Shimmering inharmonic glass resonances orbiting across the stereo field | [Listen / WAV](examples/audio/glass-orbit.wav) | [`glass-orbit.json`](examples/recipes/glass-orbit.json) |
-| **Afterimage** | Accelerating filtered riser landing in a deep sub impact and metallic tail | [Listen / WAV](examples/audio/afterimage.wav) | [`afterimage.json`](examples/recipes/afterimage.json) |
+```sh
+git clone --depth 1 https://github.com/mchl-schrdng/antipode-audio.git
+cd antipode-audio
+uv run --locked antipode --workspace ./audio render examples/recipes/glass-orbit.json my-first-sound.wav
+```
 
-Experience them interactively in the live listening room at **[antipode.quest](https://antipode.quest)**.
+Open `./audio/my-first-sound.wav` to listen. Change a layer's pitch, envelope or stereo position in a copy of the recipe, then choose a new output filename for your next render.
+
+| Recipe | Sound |
+| --- | --- |
+| [Event Horizon](examples/recipes/event-horizon.json) | A 55 Hz sub-drone with detuned pads and metallic decay |
+| [Glass Orbit](examples/recipes/glass-orbit.json) | Inharmonic glass resonances moving across the stereo field |
+| [Afterimage](examples/recipes/afterimage.json) | A filtered riser ending in a sub impact |
 
 ---
 
@@ -192,7 +198,7 @@ Every push and pull request is verified across **Linux (Python 3.11 & 3.12)**, *
 
 | Check | Scope |
 | :--- | :--- |
-| **DSP & Synthesis** (`test_engine.py`, `test_composition.py`) | Bit-accuracy of the 3 reference studies, exponential glides, constant-power panning, per-layer & multi-rate filtering, DC-free spectral centroid, concurrent atomic writes |
+| **DSP & Synthesis** (`test_engine.py`, `test_composition.py`) | Stereo envelopes and spectral centroids of the three example recipes, exponential glides, constant-power panning, per-layer & multi-rate filtering, DC-free spectral centroid, concurrent atomic writes |
 | **Path & Format Safety** (`test_engine.py`) | Workspace confinement, symlink/traversal rejection, Windows drive/ADS rejection, malformed RIFF/WAV handling |
 | **Transports** (`test_cli.py`, `test_mcp.py`, `test_integrations.py`) | CLI commands, real `stdio` MCP subprocesses (modern & legacy negotiation), offline plugin manifest launches |
 | **Reproducible Packaging** (`test_distribution.py`) | Deterministic SHA-256 ZIP bundles for portable Agent Plugins and Antigravity |
@@ -204,6 +210,7 @@ uv run --locked python -m unittest discover -s tests -v
 uv build
 uv run --locked python scripts/build_plugin.py
 uv run --locked python scripts/build_plugin.py --client antigravity
+uv run --locked python scripts/check_distribution.py
 ```
 
 ---
@@ -211,6 +218,6 @@ uv run --locked python scripts/build_plugin.py --client antigravity
 ## Rights & Provenance
 
 - **Software & original vector artwork:** [Apache-2.0](LICENSE).
-- **Bundled demo audio & recipes:** [CC0-1.0](examples/LICENSE), to the extent contributors hold rights.
+- **Example recipes:** [CC0-1.0](examples/LICENSE), to the extent contributors hold rights.
 - **Your renders:** Antipode claims no ownership, royalty, or attribution requirement over audio you generate.
 - **Notices:** Read [Rights & Provenance](docs/rights.md) and [Third-Party Notices](THIRD_PARTY_NOTICES.md) (note: the working name *Antipode* has not undergone formal trademark clearance).

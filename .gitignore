@@ -7,3 +7,22 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .DS_Store
+
+# Personal compositions, renders and sample banks
+*.score.json
+*.wav
+*.wave
+*.flac
+*.aif
+*.aiff
+*.mp3
+*.m4a
+*.ogg
+*.opus
+*.pcm
+*.sf2
+*.sf3
+*.aifc
+*.aac
+*.mid
+*.midi

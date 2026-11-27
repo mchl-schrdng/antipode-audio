@@ -1,6 +1,6 @@
 {
   "name": "antipode",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create original sound effects and layered atmospheres locally. Procedural synthesis, editable recipes, and WAV export.",
   "mcpServers": {
     "antipode": {
