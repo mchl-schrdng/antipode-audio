@@ -56,6 +56,17 @@ class McpTests(unittest.IsolatedAsyncioTestCase):
                     })
                     self.assertFalse(rendered.is_error, rendered.content)
                     self.assertEqual(rendered.structured_content["channels"], 2)
+                    family = {
+                        "base": {"duration": 0.2, "layers": [{"material": "wood", "duration": 0.1,
+                                 "automation": {"lowpass_hz": [[0, 500], [0.1, 6000]]}}]},
+                        "members": {"tap": {}, "brush": {"events": [{"layer": 0, "gesture": "rub"}]}},
+                    }
+                    selected = await client.call_tool("render_recipe", {
+                        "recipe": family, "member": "brush", "output": "brush.wav",
+                    })
+                    self.assertFalse(selected.is_error, selected.content)
+                    self.assertEqual(selected.structured_content["member"], "brush")
+                    self.assertEqual(selected.structured_content["frames"], 9600)
                     bad_glide = await client.call_tool("render_recipe", {
                         "output": "bad-glide.wav",
                         "recipe": {"duration": 0.3, "layers": [{"preset": "kick", "duration": 0.2, "note_end": "A2"}]},

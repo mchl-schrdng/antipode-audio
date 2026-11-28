@@ -36,6 +36,7 @@ def main() -> None:
     render = commands.add_parser("render", help="Render a layered sound recipe into a stereo WAV.")
     render.add_argument("recipe", help="Path to a JSON recipe (outside or inside the audio workspace).")
     render.add_argument("output", help="New .wav path relative to the audio workspace.")
+    render.add_argument("--member", help="Name of a variation from a sound family JSON file.")
     commands.add_parser("mcp", help="Serve MCP over stdio until the client disconnects.")
     arguments = vars(parser.parse_args())
     command = arguments.pop("command")

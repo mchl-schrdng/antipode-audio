@@ -36,6 +36,7 @@ FILES = (
     "examples/recipes/afterimage.json",
     "examples/recipes/event-horizon.json",
     "examples/recipes/glass-orbit.json",
+    "examples/recipes/signal-box.family.json",
     "gemini-extension.json",
     "integrations/antigravity.plugin.json",
     "integrations/claude.mcp.json",
@@ -52,7 +53,10 @@ FILES = (
     "src/antipode/__init__.py",
     "src/antipode/cli.py",
     "src/antipode/engine.py",
+    "src/antipode/materials.py",
     "src/antipode/mcp_server.py",
+    "src/antipode/motion.py",
+    "src/antipode/recipes.py",
     "src/antipode/synthesis.py",
     "uv.lock",
 )

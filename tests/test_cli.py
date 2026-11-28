@@ -45,6 +45,13 @@ class CliTests(unittest.TestCase):
             rendered = run("render", str(recipe), "layered.wav")
             self.assertEqual(rendered.returncode, 0, rendered.stderr)
             self.assertEqual(json.loads(rendered.stdout)["channels"], 2)
+            family = Path(__file__).resolve().parents[1] / "examples/recipes/signal-box.family.json"
+            selected = run("render", str(family), "confirmed.wav", "--member", "confirm")
+            self.assertEqual(selected.returncode, 0, selected.stderr)
+            self.assertEqual(json.loads(selected.stdout)["member"], "confirm")
+            missing = run("render", str(family), "unspecified.wav")
+            self.assertIn("Choose a member", missing.stderr)
+            self.assertFalse((workspace / "unspecified.wav").exists())
             recipe.write_text("{broken")
             invalid = run("render", str(recipe), "invalid.wav")
             self.assertEqual(invalid.returncode, 1)

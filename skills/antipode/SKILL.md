@@ -7,9 +7,13 @@ description: Create original sound effects, sonic identities, layered atmosphere
 
 Turn the user's description into a concrete sound, then refine by listening and measuring. The available engine is procedural DSP, with no pretrained model or sample library.
 
-Use the connected Antipode MCP tools. Start with `list_presets` to see the actual sources. Choose `generate_sound` for a single source and `render_recipe` for layered stereo design. Tool names may carry the host's plugin/server prefix. If the server is unavailable, explain that Antipode needs its local dependencies installed and refer to the repository's `docs/integrations.md`; do not install a guessed package from a registry.
+Use the connected Antipode MCP tools. Start with `list_presets` for the 16 preset voices. Choose `generate_sound` for one preset and `render_recipe` for stereo layers, materials, automation or families. Tool names may carry the host's plugin/server prefix. If the server is unavailable, explain that Antipode needs its local dependencies installed and refer to the repository's `docs/integrations.md`; do not install a guessed package from a registry.
 
 For layered work, read [the recipe reference](references/recipes.md). Describe the intended duration, register, texture, motion and space in one short sentence, then render a small number of purposeful variants. Pick contrasting layers with distinct roles: body, motion, detail. Leave headroom and space; adding layers is not automatically an improvement.
+
+- For a physical object, choose a `material` layer. To compare a hanging plate with the same plate held in a hand, keep its metal body, pitch, seed and strike, then raise `damping` for the held version. Use `gesture: "rub"` for sustained contact.
+- For “three waves,” decide what moves. Write three peaks between troughs in `automation.lowpass_hz` for brightness or `automation.level_db` for loudness. Time the points in seconds from the start of that layer. To slow down the last wave, move its points and extend the layer and recipe durations if needed.
+- For “three signals from the same object,” save one family JSON with a shared `base` recipe and named `members`. Give each cue its own event timing, attack or pitch. Render each with `render_recipe(recipe=family, output="confirm.wav", member="confirm")`, using its own name and output path. Edit the base to change the timbre of the whole set.
 
 Save the exact recipe JSON next to the project deliverables using the host's file tool so the user can reproduce or edit it. Preserve seeds while comparing changes. Change one or two relevant parameters per iteration. Render new output names; Antipode never overwrites files. Parallel agents should use distinct subdirectories or filename prefixes.
 

@@ -55,6 +55,7 @@ Open `./audio/my-first-sound.wav` to listen. Change a layer's pitch, envelope or
 | [Event Horizon](examples/recipes/event-horizon.json) | A 55 Hz sub-drone with detuned pads and metallic decay |
 | [Glass Orbit](examples/recipes/glass-orbit.json) | Inharmonic glass resonances moving across the stereo field |
 | [Afterimage](examples/recipes/afterimage.json) | A filtered riser ending in a sub impact |
+| [Signal Box](examples/recipes/signal-box.family.json) | Three cues from one shared timbre. Select `open`, `confirm` or `alert` when rendering |
 
 ---
 
@@ -99,7 +100,7 @@ Antipode runs as a local `stdio` process (`antipode-mcp`) with no daemon, API ke
 | :--- | :--- |
 | `list_presets` | Discover the 16 built-in procedural synthesis voices |
 | `generate_sound` | Render a single mono voice by frequency (`20–8000 Hz`) or scientific pitch (`E0–B8`) |
-| `render_recipe` | Synthesize and mix up to 16 stereo layers with pitch glides, panning, per-layer filters & master effects |
+| `render_recipe` | Mix up to 16 procedural layers, animate their controls, or render a named family member |
 | `process_audio` | Apply high-pass/low-pass filtering, gain, fades, reversal & peak normalization to an existing WAV |
 | `analyze_audio` | Measure peak/RMS dBFS, transient peak time, AC spectral centroid (Hz), stereo balance & clipping |
 
@@ -126,7 +127,11 @@ Antipode runs as a local `stdio` process (`antipode-mcp`) with no daemon, API ke
 
 ### 3. Declarative Sound Recipes
 
-Recipes are plain, version-controllable JSON objects supporting scientific notes (`E0–B8`), exponential pitch glides (`note` → `note_end`), constant-power stereo movement (`pan` → `pan_end`), per-layer filters (`highpass_hz`, `lowpass_hz`), and master bus DSP:
+Ask for “the same plate struck, rubbed, then struck while held.” A material layer models the resonances of metal, glass or wood. Keep its pitch, switch its contact gesture, then increase `damping` to hear the ringing die away sooner.
+
+For “open the filter, snap it shut, then bring it back in three waves,” give the layer a curve of cutoff frequencies over time. Each point can be edited independently. For a set of related cues, keep their sound in one base recipe and write a different sequence of events for each member. [Recipe format and examples](skills/antipode/references/recipes.md)
+
+The following ordinary recipe combines two preset layers with pitch and pan movement, delay and reverb.
 
 ```json
 {
@@ -182,6 +187,9 @@ uv run --locked antipode --workspace ./my-sounds generate ui-chime.wav --preset 
 
 # Render a multi-layer stereo recipe
 uv run --locked antipode --workspace ./my-sounds render examples/recipes/event-horizon.json event-horizon.wav
+
+# Render the confirmation cue from a shared sound family
+uv run --locked antipode --workspace ./my-sounds render examples/recipes/signal-box.family.json confirm.wav --member confirm
 
 # Filter and normalize an existing WAV without overwriting the source
 uv run --locked antipode --workspace ./my-sounds process event-horizon.wav dark-horizon.wav --lowpass-hz 1200 --normalize-db -3

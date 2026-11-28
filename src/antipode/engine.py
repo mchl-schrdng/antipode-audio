@@ -12,6 +12,9 @@ import wave
 
 import numpy as np
 
+from antipode.materials import synthesize_material, validate_material
+from antipode.motion import curve_values, swept_lowpass, validate_automation
+from antipode.recipes import RECIPE_FIELDS, check_fields, checked_seed, layer_seed, resolve_member
 from antipode.synthesis import PRESETS, SAMPLE_RATE, effects, fade as _fade, spectral_filter, synthesize
 
 MAX_DURATION = 30
@@ -55,6 +58,99 @@ def _pitch(source: dict, hz_key: str, note_key: str, default: float | None = Non
 
 def _db(value: float) -> float | None:
     return round(20 * math.log10(value), 3) if value > 0 else None
+
+
+_LAYER_FIELDS = {
+    "preset", "start", "duration", "frequency", "note", "frequency_end", "note_end",
+    "level_db", "pan", "pan_end", "fade_in", "fade_out", "highpass_hz", "lowpass_hz", "seed",
+    "material", "gesture", "damping", "automation",
+}
+
+
+def _prepare_layer(layer: dict, index: int, duration: float, seed: int) -> dict:
+    check_fields(layer, _LAYER_FIELDS, "layer")
+    preset = layer.get("preset")
+    if ("material" in layer) == ("preset" in layer):
+        raise ValueError("Choose exactly one layer source: preset or material.")
+    if "material" in layer:
+        source = {"material": layer["material"], "gesture": layer.get("gesture", "strike"),
+                  "damping": layer.get("damping", 0.2)}
+        validate_material(**source)
+    else:
+        if "gesture" in layer or "damping" in layer:
+            raise ValueError("gesture and damping require a material layer.")
+        if not isinstance(preset, str) or preset not in PRESETS:
+            raise ValueError(f"Unknown layer preset. Choose from: {', '.join(PRESETS)}.")
+        source = {"preset": preset}
+    length = layer.get("duration")
+    _bounded("layer duration", length, 0.02, duration)
+    pan = layer.get("pan", 0)
+    values = {
+        "start": layer.get("start", 0), "duration": length,
+        "frequency": _pitch(layer, "frequency", "note", 220),
+        "frequency_end": _pitch(layer, "frequency_end", "note_end"),
+        "level_db": layer.get("level_db", -12),
+        "pan": pan, "pan_end": layer.get("pan_end", pan),
+        "fade_in": layer.get("fade_in", min(0.005, length / 4)),
+        "fade_out": layer.get("fade_out", min(0.02, length / 4)),
+        "highpass_hz": layer.get("highpass_hz", 0),
+        "lowpass_hz": layer.get("lowpass_hz", 20000),
+        "seed": layer_seed(layer, seed, index), **source,
+    }
+    if values["frequency_end"] is not None:
+        if "material" in source:
+            raise ValueError("Material resonances use a fixed note or frequency.")
+        if preset in ("kick", "noise", "wind"):
+            raise ValueError(f"preset '{preset}' does not support frequency_end or note_end.")
+    for key, limits in {
+        "start": (0, duration), "level_db": (-60, 0),
+        "pan": (-1, 1), "pan_end": (-1, 1), "fade_in": (0, length), "fade_out": (0, length),
+        "highpass_hz": (0, 10000), "lowpass_hz": (20, 20000),
+    }.items():
+        _bounded(key, values[key], *limits)
+    if values["highpass_hz"] >= values["lowpass_hz"]:
+        raise ValueError("highpass_hz must be below lowpass_hz.")
+    values["automation"] = validate_automation(layer, length)
+    layer_frames = round(length * SAMPLE_RATE)
+    if round(values["start"] * SAMPLE_RATE) + layer_frames > round(duration * SAMPLE_RATE):
+        raise ValueError("Every layer must fit inside the recipe duration.")
+    if round(values["fade_in"] * SAMPLE_RATE) + round(values["fade_out"] * SAMPLE_RATE) > layer_frames:
+        raise ValueError("Combined layer fades must fit inside the layer duration.")
+    return values
+
+
+def _render_layer(layer: dict) -> np.ndarray:
+    """Render a validated layer, with automation measured from its own start."""
+    if "material" in layer:
+        voice = synthesize_material(layer["material"], layer["gesture"], layer["damping"],
+                                    layer["duration"], layer["frequency"], layer["seed"])
+    else:
+        voice = synthesize(layer["preset"], layer["duration"], layer["frequency"],
+                           layer["seed"], layer["frequency_end"])
+    automation = layer["automation"]
+    static_filter = layer["highpass_hz"] != 0 or layer["lowpass_hz"] != 20000
+    if static_filter:
+        voice = spectral_filter(voice, layer["highpass_hz"], layer["lowpass_hz"])
+    if "lowpass_hz" in automation:
+        voice = swept_lowpass(voice, automation["lowpass_hz"])
+    if static_filter or "lowpass_hz" in automation:
+        voice_peak = float(np.max(np.abs(voice)))
+        if voice_peak < 0.01:
+            raise ValueError("Layer filter removes almost all signal; adjust highpass_hz or lowpass_hz.")
+        voice /= voice_peak
+    _fade(voice, SAMPLE_RATE, layer["fade_in"], layer["fade_out"])
+    if "pan" in automation:
+        pan = curve_values(automation["pan"], len(voice))
+    elif layer["pan"] != layer["pan_end"]:
+        pan = np.linspace(layer["pan"], layer["pan_end"], len(voice))
+    else:
+        pan = layer["pan"]
+    angle = (pan + 1) * (np.pi / 4)
+    pan_weights = np.stack((np.cos(angle), np.sin(angle)), axis=-1)
+    level = layer["level_db"]
+    if "level_db" in automation:
+        level = curve_values(automation["level_db"], len(voice))[:, None]
+    return voice * pan_weights * 10 ** (level / 20)
 
 
 class AudioEngine:
@@ -145,17 +241,21 @@ class AudioEngine:
         pitch = {key: value for key, value in (("frequency", frequency), ("note", note)) if value is not None}
         resolved_hz = _pitch(pitch, "frequency", "note", 660.0)
         _bounded("level_db", level_db, -60, -1)
-        if type(seed) is not int or not 0 <= seed <= 2**32 - 1:
-            raise ValueError("seed must be an integer between 0 and 4294967295.")
+        checked_seed(seed)
         samples = synthesize(preset, duration, resolved_hz, seed) * 10 ** (level_db / 20)
         return {**self._write(output, samples, SAMPLE_RATE), "preset": preset, "seed": seed}
 
-    def render_recipe(self, recipe: dict, output: str) -> dict[str, object]:
+    def render_recipe(self, recipe: dict, output: str, member: str | None = None) -> dict[str, object]:
         """Render a layered sound-design recipe to a new stereo 48 kHz PCM16 WAV.
 
         Recipe requires duration (0.02–30 seconds) and layers (1–16 objects).
         Optional seed (0–4294967295), peak_db (-60 to -1, default -3), effects object.
-        Each layer requires preset and duration; optional start, frequency (20–8000) or
+        For a family, pass {"base": recipe, "members": {name: arrangement}} and choose a member.
+        Its optional events list selects base layers by zero-based index, e.g. {"layer": 0, "start": 0.2}.
+        Each layer requires duration and either preset or material (metal, wood, glass).
+        Material layers accept gesture ("strike" or "rub") and damping (0 free to 1 held).
+        Layers support automation of pan, level_db and lowpass_hz with [seconds, value]
+        points relative to the layer, starting at zero. Optional start, frequency (20–8000) or
         note (E0–B8), frequency_end or note_end (not supported for kick, noise or wind),
         level_db (-60 to 0, applied after layer filtering and re-normalization),
         pan/pan_end (-1 left to 1 right), fade_in/fade_out seconds, highpass_hz/lowpass_hz, seed.
@@ -169,20 +269,15 @@ class AudioEngine:
         it does not load recordings, models, or URLs. Existing files are preserved.
         """
         self._path(output)
+        if member is not None:
+            recipe = resolve_member(recipe, member)
+        elif isinstance(recipe, dict) and "members" in recipe:
+            raise ValueError("Choose a member to render from this sound family.")
 
-        def fields(value: dict, allowed: set[str], label: str) -> None:
-            if not isinstance(value, dict) or any(key not in allowed for key in value):
-                raise ValueError(f"{label} must be an object containing only: {', '.join(sorted(allowed))}.")
-
-        def seed_value(value: int) -> None:
-            if type(value) is not int or not 0 <= value <= 2**32 - 1:
-                raise ValueError("seed must be an integer between 0 and 4294967295.")
-
-        fields(recipe, {"duration", "layers", "seed", "peak_db", "effects"}, "recipe")
+        check_fields(recipe, RECIPE_FIELDS, "recipe")
         duration = recipe.get("duration")
         _bounded("duration", duration, 0.02, MAX_DURATION)
-        seed = recipe.get("seed", 0)
-        seed_value(seed)
+        seed = checked_seed(recipe.get("seed", 0))
         target = recipe.get("peak_db", -3)
         _bounded("peak_db", target, -60, -1)
         layers = recipe.get("layers")
@@ -194,82 +289,28 @@ class AudioEngine:
             "delay_seconds": (0.01, 2), "delay_feedback": (0, 0.85), "delay_mix": (0, 1),
             "reverb_seconds": (0.1, 5), "reverb_mix": (0, 1),
         }
-        fields(options, set(bounds), "effects")
+        check_fields(options, set(bounds), "effects")
         for key, value in options.items():
             _bounded(key, value, *bounds[key])
         if options.get("highpass_hz", 0) >= options.get("lowpass_hz", 20000):
             raise ValueError("highpass_hz must be below lowpass_hz.")
-        prepared = []
         frames = round(duration * SAMPLE_RATE)
-        layer_keys = {
-            "preset", "start", "duration", "frequency", "note", "frequency_end", "note_end",
-            "level_db", "pan", "pan_end", "fade_in", "fade_out", "highpass_hz", "lowpass_hz", "seed",
-        }
-        for index, layer in enumerate(layers):
-            fields(layer, layer_keys, "layer")
-            preset = layer.get("preset")
-            if not isinstance(preset, str) or preset not in PRESETS:
-                raise ValueError(f"Unknown layer preset. Choose from: {', '.join(PRESETS)}.")
-            length = layer.get("duration")
-            _bounded("layer duration", length, 0.02, duration)
-            pan = layer.get("pan", 0)
-            values = {
-                "start": layer.get("start", 0), "duration": length,
-                "frequency": _pitch(layer, "frequency", "note", 220),
-                "frequency_end": _pitch(layer, "frequency_end", "note_end"),
-                "level_db": layer.get("level_db", -12),
-                "pan": pan, "pan_end": layer.get("pan_end", pan),
-                "fade_in": layer.get("fade_in", min(0.005, length / 4)),
-                "fade_out": layer.get("fade_out", min(0.02, length / 4)),
-                "highpass_hz": layer.get("highpass_hz", 0),
-                "lowpass_hz": layer.get("lowpass_hz", 20000),
-                "seed": layer.get("seed", (seed + index) % 2**32), "preset": preset,
-            }
-            if values["frequency_end"] is not None and preset in ("kick", "noise", "wind"):
-                raise ValueError(f"preset '{preset}' does not support frequency_end or note_end.")
-            for key, limits in {
-                "start": (0, duration), "level_db": (-60, 0),
-                "pan": (-1, 1), "pan_end": (-1, 1), "fade_in": (0, length), "fade_out": (0, length),
-                "highpass_hz": (0, 10000), "lowpass_hz": (20, 20000),
-            }.items():
-                _bounded(key, values[key], *limits)
-            if values["highpass_hz"] >= values["lowpass_hz"]:
-                raise ValueError("highpass_hz must be below lowpass_hz.")
-            seed_value(values["seed"])
-            layer_frames = round(length * SAMPLE_RATE)
-            if round(values["start"] * SAMPLE_RATE) + layer_frames > frames:
-                raise ValueError("Every layer must fit inside the recipe duration.")
-            if round(values["fade_in"] * SAMPLE_RATE) + round(values["fade_out"] * SAMPLE_RATE) > layer_frames:
-                raise ValueError("Combined layer fades must fit inside the layer duration.")
-            prepared.append(values)
+        prepared = [_prepare_layer(layer, index, duration, seed) for index, layer in enumerate(layers)]
         mix = np.zeros((frames, 2))
         for layer in prepared:
-            voice = synthesize(
-                layer["preset"], layer["duration"], layer["frequency"], layer["seed"], layer["frequency_end"]
-            )
-            if layer["highpass_hz"] or layer["lowpass_hz"] != 20000:
-                voice = spectral_filter(voice, layer["highpass_hz"], layer["lowpass_hz"])
-                voice_peak = float(np.max(np.abs(voice)))
-                if voice_peak < 0.01:
-                    raise ValueError("Layer filter removes almost all signal; adjust highpass_hz or lowpass_hz.")
-                voice /= voice_peak
-            _fade(voice, SAMPLE_RATE, layer["fade_in"], layer["fade_out"])
-            if layer["pan"] == layer["pan_end"]:
-                angle = (layer["pan"] + 1) * np.pi / 4
-                pan_weights = np.array([np.cos(angle), np.sin(angle)])
-            else:
-                angle = (np.linspace(layer["pan"], layer["pan_end"], len(voice))[:, None] + 1) * (np.pi / 4)
-                pan_weights = np.hstack([np.cos(angle), np.sin(angle)])
-            stereo = voice * pan_weights * 10 ** (layer["level_db"] / 20)
+            stereo = _render_layer(layer)
             start = round(layer["start"] * SAMPLE_RATE)
-            mix[start:start + len(voice)] += stereo
+            mix[start:start + len(stereo)] += stereo
         mix = effects(mix, options, seed)
         _fade(mix, SAMPLE_RATE, min(0.005, duration / 4), min(0.08, duration / 4))
         peak = float(np.max(np.abs(mix)))
         if peak:
             mix *= 10 ** (target / 20) / peak
         digest = hashlib.sha256(json.dumps(recipe, sort_keys=True, allow_nan=False).encode()).hexdigest()
-        return {**self._write(output, mix, SAMPLE_RATE), "layers": len(layers), "seed": seed, "recipe_sha256": digest}
+        report = {**self._write(output, mix, SAMPLE_RATE), "layers": len(layers), "seed": seed, "recipe_sha256": digest}
+        if member is not None:
+            report["member"] = member
+        return report
 
     def process_audio(
         self,

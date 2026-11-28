@@ -26,12 +26,13 @@ def serve(workspace: str) -> None:
     engine = AudioEngine(workspace)
     server = MCPServer(
         "antipode-mcp",
-        version="0.1.1",
+        version="0.6.0",
         instructions=(
             "Create and process local sounds with deterministic DSP. Call list_presets first. "
             "All paths are relative to the configured audio workspace. Choose unique .wav "
             "output names for each variation or agent; files are never overwritten. "
-            "Use render_recipe for layered stereo sound design; generate_sound for a single source. "
+            "Use render_recipe for stereo layers, struck or rubbed materials, automation curves, "
+            "and named members of a sound family. Use generate_sound for a single preset. "
             "Use analyze_audio to check levels. No neural audio generation or playback is provided."
         ),
     )
